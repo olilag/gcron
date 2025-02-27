@@ -22,6 +22,18 @@ public enum DayOfWeek : byte
     All = (1 << 7) - 1
 }
 
+public static class DayOfWeekExtensions
+{
+    public static bool Contains(this DayOfWeek dayOfWeek, System.DayOfWeek weekday)
+    {
+        if (weekday == System.DayOfWeek.Sunday)
+        {
+            return (dayOfWeek & DayOfWeek.Sunday) != DayOfWeek.None;
+        }
+        return (dayOfWeek & (DayOfWeek)(1 << (int)weekday - 1)) != DayOfWeek.None;
+    }
+}
+
 /// <summary>
 /// Represents months of a year.
 /// </summary>
@@ -42,6 +54,43 @@ public enum Month : ushort
     November = 1 << 10,
     December = 1 << 11,
     All = (1 << 12) - 1
+}
+
+public static class MonthExtensions
+{
+    public static int? GetNext(this Month month, int current)
+    {
+        if (current > 13 || current <= 0)
+        {
+            return null;
+        }
+
+        for (int i = 1; i <= 12; i++)
+        {
+            var m = (Month)(1 << (i - 1));
+            if ((month & m) != Month.None)
+            {
+                if ((Month)(1 << (current - 1)) == m)
+                {
+                    return i;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static int First(this Month month)
+    {
+        for (int i = 1; i <= 12; i++)
+        {
+            var m = (Month)(1 << (i - 1));
+            if ((month & m) != Month.None)
+            {
+                return i;
+            }
+        }
+        throw new ArgumentException("No months found");
+    }
 }
 
 /// <summary>
@@ -95,6 +144,23 @@ public readonly record struct DayOfMonth : IEnumerable<byte>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+
+    public int? GetNext(int day)
+    {
+        if (day > 31 || day < 1)
+        {
+            return null;
+        }
+
+        foreach (var d in this)
+        {
+            if (d >= day)
+            {
+                return d;
+            }
+        }
+        return null;
     }
 
     public override string ToString()
@@ -169,6 +235,23 @@ public readonly record struct Hour : IEnumerable<byte>
         return GetEnumerator();
     }
 
+    public int? GetNext(int hour)
+    {
+        if (hour > 23 || hour < 0)
+        {
+            return null;
+        }
+
+        foreach (var d in this)
+        {
+            if (d >= hour)
+            {
+                return d;
+            }
+        }
+        return null;
+    }
+
     public override string ToString()
     {
         var sb = new StringBuilder();
@@ -239,6 +322,23 @@ public readonly record struct Minute : IEnumerable<byte>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+
+    public int? GetNext(int minute)
+    {
+        if (minute > 59 || minute < 0)
+        {
+            return null;
+        }
+
+        foreach (var d in this)
+        {
+            if (d >= minute)
+            {
+                return d;
+            }
+        }
+        return null;
     }
 
     public override string ToString()

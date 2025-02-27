@@ -27,6 +27,11 @@ public sealed class Server : IDisposable
         return new(_pipeServer);
     }
 
+    public void Disconnect()
+    {
+        _pipeServer.Disconnect();
+    }
+
     public void Dispose()
     {
         _objectDisposed = true;

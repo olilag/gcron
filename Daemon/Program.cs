@@ -1,14 +1,10 @@
-﻿using System;
-using System.IO;
-using System.Net.Sockets;
-using System.Text;
-
-namespace Daemon;
+﻿namespace Daemon;
 
 class Program
 {
     static void Main(string[] args)
     {
-
+        var d = new Daemon();
+        d.MainLoop();
     }
 }

@@ -1,142 +1,121 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Configuration;
 
 namespace Daemon;
 
+// TODO: handle situation where multiple jobs will run at the same time
 public class Scheduler
 {
     //private HashSet<CronJob> _configuration;
     private PriorityQueue<CronJob, DateTime> _scheduledEvents = new();
 
-    private static byte GetNextMinute(CronJob job, DateTime startTime, out byte carry)
-    {
-        foreach (var validMinute in job.Minutes)
-        {
-            if (validMinute >= startTime.Minute)
-            {
-                carry = 0;
-                return validMinute;
-            }
-        }
-        carry = 1;
-        return job.Minutes.First();
-    }
-
-    private static byte GetNextHour(CronJob job, DateTime startTime, byte carryIn, out byte carryOut)
-    {
-        carryOut = 0;
-        var currentHour = startTime.Hour + carryIn;
-        if (currentHour > 23)
-        {
-            carryOut = 1;
-            currentHour = 0;
-        }
-        foreach (var validHour in job.Hours)
-        {
-            if (validHour >= currentHour)
-            {
-                return validHour;
-            }
-        }
-        carryOut = 1;
-        return job.Hours.First();
-    }
-
-    private static byte GetNextDayOfMonth(CronJob job, DateTime startTime, byte carryIn, out byte carryOut)
-    {
-        carryOut = 0;
-        var currentDay = startTime.Day + carryIn;
-        var maxDay = DateTime.DaysInMonth(startTime.Year, startTime.Month);
-        if (currentDay > maxDay)
-        {
-            carryOut = 1;
-            currentDay = 1;
-        }
-search_begin:
-        maxDay = DateTime.DaysInMonth(startTime.Year, startTime.AddMonths(carryOut).Month);
-        foreach (var validDay in job.Days)
-        {
-            if (validDay >= currentDay)
-            {
-                if (validDay > maxDay)
-                {
-                    // first valid day thats next is bigger than max allowed day in a month => relaunch search in next month
-                    // and increment carry
-                    carryOut++;
-                    goto search_begin;
-                }
-                return validDay;
-            }
-        }
-        carryOut++;
-        var nextDay = job.Days.First();
-        var nextMonth = startTime.Month + 1;
-        if (nextMonth > 12)
-        {
-            nextMonth = 1;
-        }
-        while (nextDay > DateTime.DaysInMonth(startTime.Year, nextMonth))
-        {
-            nextMonth = startTime.Month + 1;
-            if (nextMonth > 12)
-            {
-                nextMonth = 1;
-            }
-            carryOut++;
-        }
-        return nextDay;
-    }
-
-    /*private static System.DayOfWeek GetNextDayOfWeek(CronJob job, DateTime startTime)
-    {
-        var currentDay = startTime.DayOfWeek;
-
-    }*/
-
-    private static byte GetNextMonth(CronJob job, DateTime startTime, byte carryIn, out byte carryOut)
-    {
-        carryOut = 0;
-        var currentMonth = startTime.Month + carryIn;
-        while (currentMonth > 12)
-        {
-            currentMonth -= 12;
-            carryOut++;
-        }
-        while ((job.Months & (Month)(1 << (currentMonth - 1))) == Month.None)
-        {
-            currentMonth++;
-            if (currentMonth > 12)
-            {
-                carryOut++;
-                currentMonth = 1;
-            }
-        }
-        return (byte)currentMonth;
-    }
-
-    private static int GetNextYear(DateTime startTime, byte carryIn)
-    {
-        return startTime.Year + carryIn;
-    }
+    public int Count { get { return _scheduledEvents.Count; } }
 
     internal static DateTime GetNextExecution(CronJob job, DateTime startTime)
     {
-        var nextMinute = GetNextMinute(job, startTime, out var carry);
-        var nextHour = GetNextHour(job, startTime, carry, out carry);
-        var nextDayOfMonth = GetNextDayOfMonth(job, startTime, carry, out carry);
-        // var nextDayOfWeek = ; TODO: later
-        var nextMonth = GetNextMonth(job, startTime, carry, out carry);
-        var nextYear = GetNextYear(startTime, carry);
+        var startYear = startTime.Year;
+        var startMonth = startTime.Month;
+        var startDay = startTime.Day;
+        var startHour = startTime.Hour;
+        var startMinute = startTime.Minute;
 
-        var nextExecution = new DateTime(nextYear, nextMonth, nextDayOfMonth, nextHour, nextMinute, 0);
+        var year = startYear;
+        var month = startMonth;
+        var day = startDay;
+        var hour = startHour;
+        var minute = startMinute;
+
+        // Minute
+        if (job.Minutes.GetNext(minute) is int mi)
+        {
+            minute = mi;
+        }
+        else
+        {
+            minute = job.Minutes.First();
+            hour++;
+        }
+
+        // Hour
+        if (job.Hours.GetNext(hour) is int h)
+        {
+            hour = h;
+            if (h > startHour)
+            {
+                minute = job.Minutes.First();
+            }
+        }
+        else
+        {
+            minute = job.Minutes.First();
+            hour = job.Hours.First();
+            day++;
+        }
+
+        // Day
+        var dayRv = job.Days.GetNext(day);
+retry_day:
+        if (dayRv is int d)
+        {
+            day = d;
+            if (d > startDay)
+            {
+                minute = job.Minutes.First();
+                hour = job.Hours.First();
+            }
+        }
+        else
+        {
+            minute = job.Minutes.First();
+            hour = job.Hours.First();
+            day = job.Days.First();
+            month++;
+        }
+
+        // Month
+        if (job.Months.GetNext(month) is int mo)
+        {
+            month = mo;
+            if (mo > startMonth)
+            {
+                minute = job.Minutes.First();
+                hour = job.Hours.First();
+                day = job.Days.First();
+            }
+        }
+        else
+        {
+            minute = job.Minutes.First();
+            hour = job.Hours.First();
+            day = job.Days.First();
+            month = job.Months.First();
+            year++;
+        }
+
+        var dateChanged = day != startDay || month != startMonth || year != startYear;
+
+        if (day > 28 && dateChanged && day > DateTime.DaysInMonth(year, month))
+        {
+            dayRv = null;
+            goto retry_day;
+        }
+
+        var nextExecution = new DateTime(year, month, day, hour, minute, 0);
+        // TODO: handle weekdays (do a second search based on weekday and return the one that is closer to today)
         return nextExecution;
     }
 
     public CronJob Peek()
     {
         return _scheduledEvents.Peek();
+    }
+
+    public bool TryPeek([MaybeNullWhen(false)] out CronJob element, [MaybeNullWhen(false)] out DateTime priority)
+    {
+        return _scheduledEvents.TryPeek(out element, out priority);
     }
 
     public void RescheduleTop()
@@ -153,11 +132,12 @@ search_begin:
     public void LoadConfiguration(HashSet<CronJob> jobs)
     {
         var newEvents = new PriorityQueue<CronJob, DateTime>();
-        var now = DateTime.Now;
+        var now = DateTime.Now.AddMinutes(1);
         foreach (var job in jobs)
         {
             newEvents.Enqueue(job, GetNextExecution(job, now));
         }
+        System.Console.WriteLine(newEvents);
         _scheduledEvents = newEvents;
     }
 }

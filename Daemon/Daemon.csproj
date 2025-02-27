@@ -9,9 +9,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../Common/Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="GcronTests" />
   </ItemGroup>
 

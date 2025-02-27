@@ -28,7 +28,11 @@ public class Executor
         proc.StartInfo.FileName = cmd;
         proc.StartInfo.Arguments = args;
         proc.StartInfo.CreateNoWindow = true;
-        proc.StartInfo.UseShellExecute = true;
+        proc.StartInfo.UseShellExecute = false;
+        proc.StartInfo.RedirectStandardOutput = true;
         proc.Start();
+        proc.WaitForExit();
+        var o = proc.StandardOutput.ReadToEnd();
+        System.Console.WriteLine(o);
     }
 }
