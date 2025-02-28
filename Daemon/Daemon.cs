@@ -13,8 +13,8 @@ public class Daemon
     private readonly Scheduler _scheduler = new();
     private readonly Executor _executor = new();
     private readonly AutoResetEvent _executeSignal = new(false);
-    private readonly AutoResetEvent _configChangedEvent = new(false);
     private CronJob[] _currentJobs = [];
+    private bool _configChanged = false;
     private HashSet<CronJob> _configuration = [];
 
     private void ExecuteThread()
@@ -38,44 +38,48 @@ public class Daemon
     {
         // load initial jobs
         _scheduler.LoadConfiguration(_configuration);
-        bool configChanged = false;
-
         while (true)
         {
-            if (configChanged)
+            try
             {
-                Console.WriteLine("Loading config");
-                _scheduler.LoadConfiguration(_configuration);
-            }
-            if (_scheduler.Count > 0)
-            {
-                if (!configChanged)
+                if (_configChanged)
                 {
-                    Console.WriteLine("Rescheduling top jobs");
-                    var (_, jobs) = _scheduler.Peek();
-                    _currentJobs = new CronJob[jobs.Count];
-                    jobs.CopyTo(_currentJobs);
-                    _scheduler.RescheduleTop();
-                    _executeSignal.Set();
+                    Console.WriteLine("Loading config");
+                    _scheduler.LoadConfiguration(_configuration);
+                }
+                if (_scheduler.Count > 0)
+                {
+                    if (!_configChanged)
+                    {
+                        Console.WriteLine("Rescheduling top job");
+                        var (_, jobs) = _scheduler.Peek();
+                        _currentJobs = new CronJob[jobs.Count];
+                        jobs.CopyTo(_currentJobs);
+                        _scheduler.RescheduleTop();
+                        _executeSignal.Set();
+                    }
+                    else
+                    {
+                        _configChanged = false;
+                    }
+                    var (nextExecution, _) = _scheduler.Peek();
+                    var now = DateTime.Now;
+                    var waitFor = nextExecution - now;
+                    // wait until next execution
+                    Console.WriteLine($"Waiting for next execution time: {nextExecution} - {now} = {waitFor}");
+                    Thread.Sleep(waitFor);
+                    Console.WriteLine("Waked up from waiting for next event");
                 }
                 else
                 {
-                    configChanged = false;
+                    // wait for config changes
+                    Console.WriteLine("Waiting for change in config");
+                    Thread.Sleep(Timeout.Infinite);
                 }
-                var (nextExecution, _) = _scheduler.Peek();
-                var now = DateTime.Now;
-                var waitFor = nextExecution - now;
-                // wait until next execution
-                Console.WriteLine($"Waiting for next execution time: {nextExecution} - {now} = {waitFor}");
-                Thread.Sleep(waitFor);
-                Console.WriteLine("Waked up from waiting for next event");
             }
-            else
+            catch (ThreadInterruptedException)
             {
-                // wait for config changes
-                Console.WriteLine("Waiting for change in config");
-                _configChangedEvent.WaitOne();
-                configChanged = true;
+                Console.WriteLine("Caught interrupt exception");
             }
         }
     }
@@ -102,17 +106,20 @@ public class Daemon
         while (true)
         {
             Console.WriteLine("Waiting for connection");
-            using var conn = server.WaitForConnection();
-            var configFile = conn.ReadString();
-            using var parser = new Parser(new StreamReader(configFile));
-            var newConfiguration = parser.Parse();
-            var configChanged = !newConfiguration.SetEquals(_configuration);
-            Console.WriteLine(configChanged);
-            _configuration = newConfiguration;
-            if (configChanged)
+            {
+                using var conn = server.WaitForConnection();
+                var configFile = conn.ReadString();
+                using var parser = new Parser(new StreamReader(configFile));
+                var newConfiguration = parser.Parse();
+                _configChanged = !newConfiguration.SetEquals(_configuration);
+                Console.WriteLine(_configChanged);
+                //Console.WriteLine(newConfiguration);
+                _configuration = newConfiguration;
+            }
+            if (_configChanged)
             {
                 Console.WriteLine("Wake up scheduler");
-                _configChangedEvent.Set();
+                scheduler.Interrupt();
             }
             Console.WriteLine("Loop end");
         }
