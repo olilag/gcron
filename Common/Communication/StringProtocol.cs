@@ -4,14 +4,16 @@ using System.Text;
 
 namespace Common.Communication;
 
-public sealed class StringProtocol(Stream ioStream) : IDisposable
+public sealed class StringProtocol(Stream ioStream, Server? server = null) : IDisposable
 {
     private readonly Stream _ioStream = ioStream;
+    private readonly Server? _server = server;
     private readonly UnicodeEncoding _streamEncoding = new();
 
     public void Dispose()
     {
         _ioStream.Flush();
+        _server?.Disconnect();
     }
 
     public string ReadString()

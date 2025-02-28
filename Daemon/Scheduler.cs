@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Configuration;
@@ -9,8 +10,7 @@ namespace Daemon;
 // TODO: handle situation where multiple jobs will run at the same time
 public class Scheduler
 {
-    //private HashSet<CronJob> _configuration;
-    private PriorityQueue<CronJob, DateTime> _scheduledEvents = new();
+    private SortedDictionary<DateTime, List<CronJob>> _scheduledEvents = [];
 
     public int Count { get { return _scheduledEvents.Count; } }
 
@@ -108,14 +108,19 @@ retry_day:
         return nextExecution;
     }
 
-    public CronJob Peek()
+    public KeyValuePair<DateTime, List<CronJob>> Peek()
     {
-        return _scheduledEvents.Peek();
+        return _scheduledEvents.First();
     }
 
-    public bool TryPeek([MaybeNullWhen(false)] out CronJob element, [MaybeNullWhen(false)] out DateTime priority)
+    private static void AddEvent(SortedDictionary<DateTime, List<CronJob>> dict, CronJob job, DateTime executionTime)
     {
-        return _scheduledEvents.TryPeek(out element, out priority);
+        if (!dict.TryGetValue(executionTime, out var list))
+        {
+            list = [];
+            dict[executionTime] = list;
+        }
+        list.Add(job);
     }
 
     public void RescheduleTop()
@@ -124,20 +129,25 @@ retry_day:
         {
             return;
         }
-        var top = _scheduledEvents.Peek();
-        var priority = GetNextExecution(top, DateTime.Now.AddMinutes(1));
-        _ = _scheduledEvents.DequeueEnqueue(top, priority);
+        var (oldTime, jobs) = Peek();
+        _scheduledEvents.Remove(oldTime);
+        var now = DateTime.Now.AddMinutes(1);
+        foreach (var job in jobs)
+        {
+            var priority = GetNextExecution(job, now);
+            AddEvent(_scheduledEvents, job, priority);
+        }
     }
 
     public void LoadConfiguration(HashSet<CronJob> jobs)
     {
-        var newEvents = new PriorityQueue<CronJob, DateTime>();
+        var newEvents = new SortedDictionary<DateTime, List<CronJob>>();
         var now = DateTime.Now.AddMinutes(1);
         foreach (var job in jobs)
         {
-            newEvents.Enqueue(job, GetNextExecution(job, now));
+            var priority = GetNextExecution(job, now);
+            AddEvent(newEvents, job, priority);
         }
-        System.Console.WriteLine(newEvents);
         _scheduledEvents = newEvents;
     }
 }

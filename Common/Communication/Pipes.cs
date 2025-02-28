@@ -24,7 +24,7 @@ public sealed class Server : IDisposable
     {
         ObjectDisposedException.ThrowIf(_objectDisposed, this);
         _pipeServer.WaitForConnection();
-        return new(_pipeServer);
+        return new(_pipeServer, this);
     }
 
     public void Disconnect()
