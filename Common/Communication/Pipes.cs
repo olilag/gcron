@@ -20,6 +20,11 @@ public sealed class Server : IDisposable
         _pipeServer = new(PipeConfig.PipeName, PipeConfig.Direction);
     }
 
+    /// <summary>
+    /// Waits for a <see cref="Client"/> to connect to this <see cref="Server"/> object.
+    /// </summary>
+    /// <returns>A <see cref="StringProtocol"/> object to send and receive data between client and serve.</returns>
+    /// <inheritdoc cref="NamedPipeServerStream.WaitForConnection"/>
     public StringProtocol WaitForConnection()
     {
         ObjectDisposedException.ThrowIf(_objectDisposed, this);
@@ -27,6 +32,7 @@ public sealed class Server : IDisposable
         return new(_pipeServer, this);
     }
 
+    /// <inheritdoc cref="NamedPipeServerStream.Disconnect"/>
     public void Disconnect()
     {
         _pipeServer.Disconnect();
@@ -47,9 +53,13 @@ public sealed class Client : IDisposable
 
     public Client()
     {
-        _pipeClient = new NamedPipeClientStream(PipeConfig.ServerAddress, PipeConfig.PipeName, PipeConfig.Direction);
+        _pipeClient = new(PipeConfig.ServerAddress, PipeConfig.PipeName, PipeConfig.Direction);
     }
 
+    /// <summary>
+    /// Tries to connect to a <see cref="Server"/> object.
+    /// </summary>
+    /// <returns>A <see cref="StringProtocol"/> object to send and receive data between client and serve.</returns>
     public StringProtocol Connect()
     {
         ObjectDisposedException.ThrowIf(_objectDisposed, this);

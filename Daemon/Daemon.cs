@@ -23,12 +23,12 @@ public class Daemon
         {
             Console.WriteLine("Waiting for execute signal");
             _executeSignal.WaitOne();
-            // TODO: fix
             foreach (var job in _currentJobs)
             {
                 var command = job.Command;
                 Console.WriteLine($"Executing command: {command}");
                 // run commands using Tasks
+                // how to handle errors in running tasks?
                 Task.Run(() => _executor.Execute(command));
             }
         }
@@ -67,6 +67,7 @@ public class Daemon
                     var waitFor = nextExecution - now;
                     // wait until next execution
                     Console.WriteLine($"Waiting for next execution time: {nextExecution} - {now} = {waitFor}");
+                    // ensure that waitFor is not negative (shouldn't happen, unless crazy rescheduling, I think)
                     Thread.Sleep(waitFor);
                     Console.WriteLine("Waked up from waiting for next event");
                 }
@@ -84,7 +85,6 @@ public class Daemon
         }
     }
 
-    // TODO: error handling
     public void MainLoop()
     {
         // store last config somewhere
@@ -105,23 +105,28 @@ public class Daemon
 
         while (true)
         {
-            Console.WriteLine("Waiting for connection");
+            try
             {
+                Console.WriteLine("Waiting for connection");
                 using var conn = server.WaitForConnection();
                 var configFile = conn.ReadString();
                 using var parser = new Parser(new StreamReader(configFile));
                 var newConfiguration = parser.Parse();
                 _configChanged = !newConfiguration.SetEquals(_configuration);
                 Console.WriteLine(_configChanged);
-                //Console.WriteLine(newConfiguration);
                 _configuration = newConfiguration;
+                if (_configChanged)
+                {
+                    Console.WriteLine("Wake up scheduler");
+                    scheduler.Interrupt();
+                }
+                Console.WriteLine("Loop end");
             }
-            if (_configChanged)
+            catch (Exception ex)
             {
-                Console.WriteLine("Wake up scheduler");
-                scheduler.Interrupt();
+                // just log the exception and move on?
+                Console.WriteLine(ex.ToString());
             }
-            Console.WriteLine("Loop end");
         }
     }
 }

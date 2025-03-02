@@ -4,6 +4,11 @@ using System.Text;
 
 namespace Common.Communication;
 
+/// <summary>
+/// Wrapper around a <see cref="Stream"/> used to send and receive data using named pipes. Each message is prepended byt its length in bytes.
+/// </summary>
+/// <param name="ioStream"><see cref="Stream"/> to wrap.</param>
+/// <param name="server"><see cref="Server"/> to automatically disconnect from when disposing.</param>
 public sealed class StringProtocol(Stream ioStream, Server? server = null) : IDisposable
 {
     private readonly Stream _ioStream = ioStream;
@@ -16,6 +21,10 @@ public sealed class StringProtocol(Stream ioStream, Server? server = null) : IDi
         _server?.Disconnect();
     }
 
+    /// <summary>
+    /// Reads a string from the stream.
+    /// </summary>
+    /// <returns>String read from stream.</returns>
     public string ReadString()
     {
         int len;
@@ -27,6 +36,11 @@ public sealed class StringProtocol(Stream ioStream, Server? server = null) : IDi
         return _streamEncoding.GetString(inBuffer);
     }
 
+    /// <summary>
+    /// Writes a string to the stream.
+    /// </summary>
+    /// <param name="outString">String to write to the stream.</param>
+    /// <returns>Number of bytes written to the stream.</returns>
     public int WriteString(string outString)
     {
         var outBuffer = _streamEncoding.GetBytes(outString);

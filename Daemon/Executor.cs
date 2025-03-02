@@ -32,7 +32,7 @@ public class Executor
         proc.StartInfo.RedirectStandardOutput = true;
         proc.Start();
         proc.WaitForExit();
-        var o = proc.StandardOutput.ReadToEnd();
-        System.Console.WriteLine(o);
+        var o = proc.StandardOutput.ReadToEnd().Trim();
+        System.Console.WriteLine($"{cmd}: {o}");
     }
 }
