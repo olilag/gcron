@@ -19,6 +19,9 @@ public class Executor
         return command;
     }
 
+    // TODO: what to do with exceptions -> nothing, process will be killed
+    // TODO: redirect stdout and stderr? -> resolve later
+    // TODO: is this process launching correct?
     public void Execute(string command)
     {
         var proc = new Process();

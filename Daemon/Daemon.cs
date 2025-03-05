@@ -8,6 +8,9 @@ using Common.Configuration;
 
 namespace Daemon;
 
+/// <summary>
+/// 
+/// </summary>
 public class Daemon
 {
     private readonly Scheduler _scheduler = new();
@@ -29,14 +32,23 @@ public class Daemon
                 Console.WriteLine($"Executing command: {command}");
                 // run commands using Tasks
                 // how to handle errors in running tasks?
+                // TODO: improve launching one shot tasks
                 Task.Run(() => _executor.Execute(command));
             }
         }
     }
 
+    private HashSet<CronJob>? LoadPersistentConfiguration()
+    {
+        // store path to last correct config file to a file somewhere
+        // load from there here
+        throw new NotImplementedException();
+    }
+
     private void SchedulerThread()
     {
         // load initial jobs
+        // TODO: add load from saved configuration here
         _scheduler.LoadConfiguration(_configuration);
         while (true)
         {
@@ -47,7 +59,7 @@ public class Daemon
                     Console.WriteLine("Loading config");
                     _scheduler.LoadConfiguration(_configuration);
                 }
-                if (_scheduler.Count > 0)
+                if (!_scheduler.IsEmpty)
                 {
                     if (!_configChanged)
                     {
@@ -87,12 +99,9 @@ public class Daemon
 
     public void MainLoop()
     {
-        // store last config somewhere
-        // wait for notification
-        // load configuration
-        // schedule
-        // sleep
-        // on wake-up check time -> if good, execute command reschedule else sleep
+        // TODO: store last config somewhere
+        // MOSTLY DONE schedule TODO: add day of week support
+        // TODO: maybe better logging
         var executor = new Thread(ExecuteThread);
         var scheduler = new Thread(SchedulerThread);
         executor.Name = "Execute Thread";

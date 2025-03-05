@@ -1,18 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Common.Configuration;
 
 namespace Daemon;
 
-// TODO: handle situation where multiple jobs will run at the same time
+/// <summary>
+/// 
+/// </summary>
 public class Scheduler
 {
     private SortedDictionary<DateTime, List<CronJob>> _scheduledEvents = [];
 
-    public int Count { get { return _scheduledEvents.Count; } }
+    /// <summary>
+    /// 
+    /// </summary>
+    public bool IsEmpty { get { return _scheduledEvents.Count != 0; } }
 
     internal static DateTime GetNextExecution(CronJob job, DateTime startTime)
     {
@@ -108,6 +111,11 @@ retry_day:
         return nextExecution;
     }
 
+    /// <summary>
+    /// Returns next events in schedule.
+    /// </summary>
+    /// <returns>Next events in schedule with their execution time as key.</returns>
+    /// <exception cref="InvalidOperationException">When there are no events.</exception>
     public KeyValuePair<DateTime, List<CronJob>> Peek()
     {
         return _scheduledEvents.First();
@@ -123,6 +131,9 @@ retry_day:
         list.Add(job);
     }
 
+    /// <summary>
+    /// Removes next events from schedule and inserts them back with new execution time.
+    /// </summary>
     public void RescheduleTop()
     {
         if (_scheduledEvents.Count == 0)
@@ -139,6 +150,10 @@ retry_day:
         }
     }
 
+    /// <summary>
+    /// Replaces current jobs in schedule with new ones.
+    /// </summary>
+    /// <param name="jobs">New jobs to replace old jobs.</param>
     public void LoadConfiguration(HashSet<CronJob> jobs)
     {
         var newEvents = new SortedDictionary<DateTime, List<CronJob>>();

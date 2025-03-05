@@ -231,6 +231,7 @@ sealed public class Parser(TextReader reader) : IDisposable
     /// </summary>
     /// <returns>Set of parsed jobs.</returns>
     /// <exception cref="InvalidConfigurationException">Configuration has invalid format.</exception>
+    /// <exception cref="IOException">Error while reading configuration file.</exception>
     /// <seealso cref="CronJob" />
     public HashSet<CronJob> Parse()
     {
