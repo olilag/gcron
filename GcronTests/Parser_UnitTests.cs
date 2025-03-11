@@ -113,6 +113,44 @@ public class Parser_UnitTests
         Assert.Equal(expected, actual);
     }
 
+    [Fact]
+    public void Parser_Parse_AllAsterisks()
+    {
+        // Arrange
+        var input = "* * * * * echo Hello World!";
+        using var parser = new Parser(new StringReader(input));
+        var minutes = Minute.All();
+        var hours = Hour.All();
+        var dayOfMonth = DayOfMonth.All();
+        var month = Month.All;
+        var dayOfWeek = DayOfWeek.All;
+        var command = "echo Hello World!";
+        HashSet<CronJob> expected = [new() { Minutes = minutes, Hours = hours, Days = dayOfMonth, Months = month, Weekdays = dayOfWeek, Command = command }];
+        // Act
+        var actual = parser.Parse();
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void Parser_Parse_ExtraNewLine()
+    {
+        // Arrange
+        var input = "* * * * * echo Hello World!\n";
+        using var parser = new Parser(new StringReader(input));
+        var minutes = Minute.All();
+        var hours = Hour.All();
+        var dayOfMonth = DayOfMonth.All();
+        var month = Month.All;
+        var dayOfWeek = DayOfWeek.All;
+        var command = "echo Hello World!";
+        HashSet<CronJob> expected = [new() { Minutes = minutes, Hours = hours, Days = dayOfMonth, Months = month, Weekdays = dayOfWeek, Command = command }];
+        // Act
+        var actual = parser.Parse();
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
     static HashSet<CronJob> ParseString(string input)
     {
         using var parser = new Parser(new StringReader(input));
@@ -235,7 +273,6 @@ public class Parser_UnitTests
         var missingMonth = "0 9 18";
         var missingDayOfMonth = "0 9";
         var missingHours = "0";
-        var missingMinutes = "";
         var secondIncomplete = """
         0 9 18 1 1 x
         5
@@ -246,7 +283,6 @@ public class Parser_UnitTests
         Assert.Throws<InvalidConfigurationException>(() => ParseString(missingMonth));
         Assert.Throws<InvalidConfigurationException>(() => ParseString(missingDayOfMonth));
         Assert.Throws<InvalidConfigurationException>(() => ParseString(missingHours));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(missingMinutes));
         Assert.Throws<InvalidConfigurationException>(() => ParseString(secondIncomplete));
     }
 }

@@ -13,7 +13,7 @@ public class ConfigurationSettings : ITomlMetadataProvider
 
 public class Config : ITomlMetadataProvider
 {
-    public ConfigurationSettings? Configuration { get; set; }
+    public ConfigurationSettings Configuration { get; set; } = new();
     // storage for comments and whitespace
     TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
 }
@@ -31,6 +31,8 @@ public static class ConfigExtensions
 public static class Settings
 {
     internal const string ConfigFile = "test.toml";
+    public static string SpoolLocation { get { return "/var/spool/gcron"; } }
+
     private static Config GetEmptyConfig()
     {
         return new Config
@@ -48,9 +50,7 @@ public static class Settings
         try
         {
             var f = File.ReadAllText(ConfigFile);
-            var c = Toml.ToModel<Config>(f);
-            c.Configuration ??= new();
-            return c;
+            return Toml.ToModel<Config>(f);
         }
         catch (TomlException)
         {

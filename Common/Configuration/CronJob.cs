@@ -299,6 +299,7 @@ public readonly record struct Minute : IEnumerable<byte>
 
     private Minute(ulong value) => _value = value;
 
+    // TODO: rewrite as property
     /// <summary>
     /// Creates a new instance of <see cref="Minute" /> that represents all minutes.
     /// </summary>

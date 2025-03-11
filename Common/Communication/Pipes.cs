@@ -47,7 +47,7 @@ public sealed class Server : IDisposable
 
 public sealed class Client : IDisposable
 {
-    const int Timeout = 5000;
+    const int Timeout = 1000;
     private readonly NamedPipeClientStream _pipeClient;
     private bool _objectDisposed = false;
 

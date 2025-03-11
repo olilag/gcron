@@ -24,7 +24,7 @@ public class Executor
     // TODO: is this process launching correct?
     public void Execute(string command)
     {
-        var proc = new Process();
+        using var proc = new Process();
         var cmd = FindCommand(command, out var argsBegin);
         var args = command[argsBegin..];
         proc.EnableRaisingEvents = false;

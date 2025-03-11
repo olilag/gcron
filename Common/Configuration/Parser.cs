@@ -58,9 +58,13 @@ sealed public class Parser(TextReader reader) : IDisposable
         return numbers;
     }
 
-    private Minute ParseMinutes()
+    private Minute? ParseMinutes()
     {
         var token = _reader.ReadToken();
+        if (token.Type == TokenType.EndOfInput)
+        {
+            return null;
+        }
         if (token.Type != TokenType.Sequence)
         {
             throw new InvalidConfigurationException("Parse error: Invalid format");
@@ -215,9 +219,13 @@ sealed public class Parser(TextReader reader) : IDisposable
         return token.Value!;
     }
 
-    private CronJob ParseJob()
+    private CronJob? ParseJob()
     {
-        var minute = ParseMinutes();
+        if (ParseMinutes() is Minute minute) { }
+        else
+        {
+            return null;
+        }
         var hour = ParseHours();
         var dayOfMonth = ParseDaysOfMonth();
         var month = ParseMonths();
@@ -239,6 +247,10 @@ sealed public class Parser(TextReader reader) : IDisposable
         while (!_reader.EndOfStream)
         {
             var job = ParseJob();
+            if (job is null)
+            {
+                break;
+            }
             jobs.Add(job);
             var token = _reader.ReadToken();
             if (token.Type != TokenType.EndOfLine && token.Type != TokenType.EndOfInput)
