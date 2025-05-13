@@ -14,7 +14,7 @@ public static class Editor
         return Environment.UserName;
     }
 
-    private static bool ConfigurationExists(string user, out string location)
+    private static bool JobConfigurationExists(string user, out string location)
     {
         location = Path.Join(Settings.SpoolLocation, user);
         return File.Exists(location);
@@ -23,7 +23,7 @@ public static class Editor
     public static int ListJobs()
     {
         var user = GetCurrentUser();
-        if (ConfigurationExists(user, out var jobFile))
+        if (JobConfigurationExists(user, out var jobFile))
         {
             // handle errors
             using var parser = new Parser(new StreamReader(jobFile));
@@ -61,11 +61,19 @@ public static class Editor
     public static int ClearJobs()
     {
         var user = GetCurrentUser();
-        if (ConfigurationExists(user, out var jobFile))
+        if (JobConfigurationExists(user, out var jobFile))
         {
-            // handle errors
-            File.Delete(jobFile);
-            return 0;
+            try
+            {
+                File.Delete(jobFile);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                // handle errors
+                Console.WriteLine(ex.Message);
+                return 4;
+            }
         }
         else
         {
@@ -76,13 +84,8 @@ public static class Editor
 
     private static string GetEditor()
     {
-        var e = Environment.GetEnvironmentVariable("EDITOR");
-        if (e != null)
-        {
-            return e;
-        }
-        // some default
-        return "nano";
+        var e = Environment.GetEnvironmentVariable("EDITOR") ?? Settings.DefaultEditor;
+        return e;
     }
 
     private static Process LaunchEditor(string fileName)
@@ -112,21 +115,31 @@ public static class Editor
         }
     }
 
-    private static int InstallConfig(string fileName, string destinationFile)
+    private static int InstallConfig(string sourceFileName, string destinationFileName)
     {
-        var dir = Path.GetDirectoryName(destinationFile);
+        var dir = Path.GetDirectoryName(destinationFileName);
         Directory.CreateDirectory(dir!);
-        File.Copy(fileName, destinationFile, true);
-        return NotifyDaemon(destinationFile);
+        File.Copy(sourceFileName, destinationFileName, true);
+        return NotifyDaemon(destinationFileName);
+    }
+
+    private static string GetTempFile()
+    {
+        var cache = PersistentCache.Load();
+        if (!File.Exists(cache.TempFile))
+        {
+            cache.TempFile = Path.GetTempFileName();
+            cache.Save();
+        }
+        return cache.TempFile;
     }
 
     public static int EditJobs()
     {
-        // cache this file and reuse later -> solve caching
-        var tmpFile = Path.GetTempFileName();
+        var tmpFile = GetTempFile();
         Console.WriteLine(tmpFile);
         var user = GetCurrentUser();
-        if (ConfigurationExists(user, out var jobFile))
+        if (JobConfigurationExists(user, out var jobFile))
         {
             // maybe errors?
             File.Copy(jobFile, tmpFile, true);
