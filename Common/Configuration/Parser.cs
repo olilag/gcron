@@ -17,7 +17,7 @@ public class InvalidConfigurationException : Exception
 /// Class for parsing configuration from a text file.
 /// </summary>
 /// <param name="reader">Reads from configuration source.</param>
-sealed public class Parser(TextReader reader) : IDisposable
+public sealed class Parser(TextReader reader) : IDisposable
 {
     private readonly TokenReader _reader = new(new BufferedReader(reader));
 

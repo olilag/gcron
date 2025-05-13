@@ -16,22 +16,25 @@ public class Config : ITomlMetadataProvider
     public ConfigurationSettings Configuration { get; set; } = new();
     // storage for comments and whitespace
     TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
-}
 
-public static class ConfigExtensions
-{
-    public static bool Save(this Config config)
+    public bool Save()
     {
-        // handle missing directory
+        // create missing directory
+        var parentDir = Path.GetDirectoryName(Settings.ConfigFile);
+        if (!string.IsNullOrEmpty(parentDir))
+        {
+            Directory.CreateDirectory(parentDir);
+        }
         using var writer = new StreamWriter(Settings.ConfigFile);
-        return Toml.TryFromModel(config, writer, out _);
+        return Toml.TryFromModel(this, writer, out _);
     }
 }
 
 public static class Settings
 {
-    internal const string ConfigFile = "test.toml";
-    public static string SpoolLocation { get { return "/var/spool/gcron"; } }
+    internal const string ConfigFile = "/home/gwen/.config/gcron/config.toml";
+    public readonly static string SpoolLocation = "/var/spool/gcron";
+    public readonly static string DefaultEditor = "nano";
 
     private static Config GetEmptyConfig()
     {
