@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Common;
 using Common.Communication;
 using Common.Configuration;
 
@@ -19,6 +20,7 @@ public class Daemon
     private CronJob[] _currentJobs = [];
     private bool _configChanged = false;
     private HashSet<CronJob> _configuration = [];
+    private readonly Config _appCfg = Settings.Load();
 
     private void ExecuteThread()
     {
@@ -38,17 +40,29 @@ public class Daemon
         }
     }
 
-    private HashSet<CronJob>? LoadPersistentConfiguration()
+    private HashSet<CronJob> LoadPersistentConfiguration()
     {
         // store path to last correct config file to a file somewhere
         // load from there here
-        throw new NotImplementedException();
+        var jobFile = _appCfg.Configuration.InitialJobsFile;
+        if (!File.Exists(jobFile))
+        {
+            return [];
+        }
+        try
+        {
+            return LoadJobConfiguration(jobFile);
+        }
+        catch (InvalidConfigurationException)
+        {
+            return [];
+        }
     }
 
     private void SchedulerThread()
     {
         // load initial jobs
-        // TODO: add load from saved configuration here
+        _configuration = LoadPersistentConfiguration();
         _scheduler.LoadConfiguration(_configuration);
         while (true)
         {
@@ -97,6 +111,12 @@ public class Daemon
         }
     }
 
+    private static HashSet<CronJob> LoadJobConfiguration(string fileName)
+    {
+        using var parser = new Parser(new StreamReader(fileName));
+        return parser.Parse();
+    }
+
     public void MainLoop()
     {
         // TODO: store last config somewhere
@@ -119,15 +139,16 @@ public class Daemon
                 Console.WriteLine("Waiting for connection");
                 using var conn = server.WaitForConnection();
                 var configFile = conn.ReadString();
-                using var parser = new Parser(new StreamReader(configFile));
-                var newConfiguration = parser.Parse();
+                var newConfiguration = LoadJobConfiguration(configFile);
                 _configChanged = !newConfiguration.SetEquals(_configuration);
                 Console.WriteLine(_configChanged);
-                _configuration = newConfiguration;
                 if (_configChanged)
                 {
+                    _configuration = newConfiguration;
                     Console.WriteLine("Wake up scheduler");
                     scheduler.Interrupt();
+                    _appCfg.Configuration.InitialJobsFile = configFile;
+                    _appCfg.Save();
                 }
                 Console.WriteLine("Loop end");
             }

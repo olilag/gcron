@@ -6,7 +6,7 @@ namespace Common;
 
 public class ConfigurationSettings : ITomlMetadataProvider
 {
-    public string? JobFile { get; set; }
+    public string? InitialJobsFile { get; set; }
     // storage for comments and whitespace
     TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
 }
