@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Tomlyn;
 using Tomlyn.Model;
@@ -10,29 +11,29 @@ public class PersistentCache : ITomlMetadataProvider
     // storage for comments and whitespace
     TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
 
-    private const string CacheLocation = "/home/gwen/.cache/gcron/cache.toml";
+    private readonly static string s_cacheLocation = $"/home/{Environment.UserName}/.cache/gcron/cache.toml";
 
     public bool Save()
     {
         // create missing directory
-        var parentDir = Path.GetDirectoryName(CacheLocation);
+        var parentDir = Path.GetDirectoryName(s_cacheLocation);
         if (!string.IsNullOrEmpty(parentDir))
         {
             Directory.CreateDirectory(parentDir);
         }
-        using var writer = new StreamWriter(CacheLocation);
+        using var writer = new StreamWriter(s_cacheLocation);
         return Toml.TryFromModel(this, writer, out _);
     }
 
     public static PersistentCache Load()
     {
-        if (!File.Exists(CacheLocation))
+        if (!File.Exists(s_cacheLocation))
         {
             return new();
         }
         try
         {
-            var f = File.ReadAllText(CacheLocation);
+            var f = File.ReadAllText(s_cacheLocation);
             return Toml.ToModel<PersistentCache>(f);
         }
         catch (TomlException)

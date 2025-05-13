@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Tomlyn;
 using Tomlyn.Model;
@@ -32,7 +33,7 @@ public class Config : ITomlMetadataProvider
 
 public static class Settings
 {
-    internal const string ConfigFile = "/home/gwen/.config/gcron/config.toml";
+    internal readonly static string ConfigFile = $"/home/{Environment.UserName}/.config/gcron/config.toml";
     public readonly static string SpoolLocation = "/var/spool/gcron";
     public readonly static string DefaultEditor = "nano";
 
