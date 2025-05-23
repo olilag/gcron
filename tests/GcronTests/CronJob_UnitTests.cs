@@ -50,7 +50,7 @@ public class CronJob_UnitTests
         // Arrange
         byte[] expected = [.. Enumerable.Range(1, 31).Select(idx => (byte)idx)];
         // Act
-        var dayOfMonth = DayOfMonth.All();
+        var dayOfMonth = DayOfMonth.All;
         // Assert
         Assert.Equal(expected, dayOfMonth);
         Assert.Equal(new(expected), dayOfMonth);
@@ -117,7 +117,7 @@ public class CronJob_UnitTests
         // Arrange
         byte[] expected = [.. Enumerable.Range(0, 24).Select(idx => (byte)idx)];
         // Act
-        var hour = Hour.All();
+        var hour = Hour.All;
         // Assert
         Assert.Equal(expected, hour);
         Assert.Equal(new(expected), hour);
