@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Common;
-using Common.Communication;
 
 namespace Editor;
 
@@ -68,9 +65,6 @@ class Program
             return Task.Run(() => rv);
         }, editOption, validateOption, listOption, removeOption);
         return rootCommand.Invoke(args);
-        // TODO: launch editor ($EDITOR env var) or nano on Linux, idk what on Windows
-        // TODO: create config file somewhere before editing if does not exist
-        // TODO: validate the configuration -> notify daemon only if valid
         // TODO: add option -e -> open editor (save file to /var/spool/gcron/{user} on Linux), edit it in some temp file
         // TODO: add option -l -> list jobs
         // TODO: add option -r -> remove current jobs

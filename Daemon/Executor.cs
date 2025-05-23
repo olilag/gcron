@@ -2,8 +2,17 @@ using System.Diagnostics;
 
 namespace Daemon;
 
-public class Executor
+/// <summary>
+/// Executes job commands.
+/// </summary>
+class Executor
 {
+    /// <summary>
+    /// Finds program to run (first substring separated by a space).
+    /// </summary>
+    /// <param name="command">String from job configuration.</param>
+    /// <param name="argsBegin">Position where arguments begin.</param>
+    /// <returns>Name of program to run.</returns>
     private static string FindCommand(string command, out int argsBegin)
     {
         for (int i = 0; i < command.Length; i++)

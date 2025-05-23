@@ -60,6 +60,7 @@ public sealed class Client : IDisposable
     /// Tries to connect to a <see cref="Server"/> object.
     /// </summary>
     /// <returns>A <see cref="StringProtocol"/> object to send and receive data between client and serve.</returns>
+    /// <exception cref="TimeoutException">Thrown when couldn't connect to the server.</exception>
     public StringProtocol Connect()
     {
         ObjectDisposedException.ThrowIf(_objectDisposed, this);

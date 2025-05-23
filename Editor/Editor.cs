@@ -7,6 +7,9 @@ using Common.Configuration;
 
 namespace Editor;
 
+/// <summary>
+/// Encapsulates commands to edit and manage job configuration.
+/// </summary>
 public static class Editor
 {
     private static string GetCurrentUser()
@@ -20,19 +23,30 @@ public static class Editor
         return File.Exists(location);
     }
 
+    /// <summary>
+    /// Lists jobs in current active configuration.
+    /// </summary>
+    /// <returns>Return code for main.</returns>
     public static int ListJobs()
     {
         var user = GetCurrentUser();
         if (JobConfigurationExists(user, out var jobFile))
         {
-            // handle errors
-            using var parser = new Parser(new StreamReader(jobFile));
-            var cfg = parser.Parse();
-            foreach (var job in cfg)
+            try
             {
-                Console.WriteLine(job);
+                using var parser = new Parser(new StreamReader(jobFile));
+                var cfg = parser.Parse();
+                foreach (var job in cfg)
+                {
+                    Console.WriteLine(job);
+                }
+                return 0;
             }
-            return 0;
+            catch (IOException)
+            {
+                Console.WriteLine("Error while opening configuration");
+                return 4;
+            }
         }
         else
         {
@@ -41,6 +55,11 @@ public static class Editor
         }
     }
 
+    /// <summary>
+    /// Checks if provided file is syntactically correct.
+    /// </summary>
+    /// <param name="file">File to check.</param>
+    /// <returns>Return code for main.</returns>
     public static int CheckSyntax(FileInfo file)
     {
         try
@@ -50,14 +69,22 @@ public static class Editor
             Console.WriteLine("Configuration is ok");
             return 0;
         }
-        catch (Exception ex)
+        catch (IOException)
         {
-            // handle errors
+            Console.WriteLine("Error while opening configuration");
+            return 4;
+        }
+        catch (InvalidConfigurationException ex)
+        {
             Console.WriteLine(ex.Message);
             return 2;
         }
     }
 
+    /// <summary>
+    /// Deletes current job configuration.
+    /// </summary>
+    /// <returns>Return code for main.</returns>
     public static int ClearJobs()
     {
         var user = GetCurrentUser();
@@ -68,9 +95,8 @@ public static class Editor
                 File.Delete(jobFile);
                 return 0;
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
-                // handle errors
                 Console.WriteLine(ex.Message);
                 return 4;
             }
@@ -117,6 +143,7 @@ public static class Editor
 
     private static int InstallConfig(string sourceFileName, string destinationFileName)
     {
+        // handle errors
         var dir = Path.GetDirectoryName(destinationFileName);
         Directory.CreateDirectory(dir!);
         File.Copy(sourceFileName, destinationFileName, true);
@@ -134,6 +161,10 @@ public static class Editor
         return cache.TempFile;
     }
 
+    /// <summary>
+    /// Edits current job configuration.
+    /// </summary>
+    /// <returns>Return code for main.</returns>
     public static int EditJobs()
     {
         var tmpFile = GetTempFile();
@@ -152,10 +183,10 @@ public static class Editor
             using var parser = new Parser(new StreamReader(tmpFile));
             var cfg = parser.Parse();
         }
-        catch (Exception ex)
+        catch (InvalidConfigurationException ex)
         {
             // handle errors
-            Console.WriteLine(ex);
+            Console.WriteLine(ex.Message);
             return 2;
         }
         return InstallConfig(tmpFile, jobFile);

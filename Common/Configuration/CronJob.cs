@@ -125,10 +125,7 @@ public readonly record struct DayOfMonth : IEnumerable<byte>
     /// Creates a new instance of <see cref="DayOfMonth" /> that represents all days.
     /// </summary>
     /// <returns><see cref="DayOfMonth" /> instance that represents all days.</returns>
-    public static DayOfMonth All()
-    {
-        return new DayOfMonth((uint)((1UL << 31) - 1));
-    }
+    public static DayOfMonth All => new((uint)((1UL << 31) - 1));
 
     public IEnumerator<byte> GetEnumerator()
     {
@@ -214,10 +211,7 @@ public readonly record struct Hour : IEnumerable<byte>
     /// Creates a new instance of <see cref="Hour" /> that represents all hours.
     /// </summary>
     /// <returns><see cref="Hour" /> instance that represents all hours.</returns>
-    public static Hour All()
-    {
-        return new Hour((1 << 24) - 1);
-    }
+    public static Hour All => new((1 << 24) - 1);
 
     public IEnumerator<byte> GetEnumerator()
     {
@@ -299,15 +293,11 @@ public readonly record struct Minute : IEnumerable<byte>
 
     private Minute(ulong value) => _value = value;
 
-    // TODO: rewrite as property
     /// <summary>
     /// Creates a new instance of <see cref="Minute" /> that represents all minutes.
     /// </summary>
     /// <returns><see cref="Minute" /> instance that represents all minutes.</returns>
-    public static Minute All()
-    {
-        return new Minute((1UL << 60) - 1);
-    }
+    public static Minute All() => new((1UL << 60) - 1);
 
     public IEnumerator<byte> GetEnumerator()
     {

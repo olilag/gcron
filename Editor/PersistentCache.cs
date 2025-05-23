@@ -5,14 +5,24 @@ using Tomlyn.Model;
 
 namespace Editor;
 
-public class PersistentCache : ITomlMetadataProvider
+/// <summary>
+/// Persistent cache for Editor application.
+/// </summary>
+class PersistentCache : ITomlMetadataProvider
 {
+    /// <summary>
+    /// Location of recently created temporary file to avoid creating one if it already exists.
+    /// </summary>
     public string? TempFile { get; set; }
     // storage for comments and whitespace
     TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
 
     private readonly static string s_cacheLocation = $"/home/{Environment.UserName}/.cache/gcron/cache.toml";
 
+    /// <summary>
+    /// Saves current values.
+    /// </summary>
+    /// <returns>Saved successfully.</returns>
     public bool Save()
     {
         // create missing directory
@@ -25,6 +35,10 @@ public class PersistentCache : ITomlMetadataProvider
         return Toml.TryFromModel(this, writer, out _);
     }
 
+    /// <summary>
+    /// Loads values from disk.
+    /// </summary>
+    /// <returns>The cache.</returns>
     public static PersistentCache Load()
     {
         if (!File.Exists(s_cacheLocation))

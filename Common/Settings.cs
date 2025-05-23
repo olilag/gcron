@@ -7,6 +7,9 @@ namespace Common;
 
 public class ConfigurationSettings : ITomlMetadataProvider
 {
+    /// <summary>
+    /// Load jobs from this file on Daemon startup.
+    /// </summary>
     public string? InitialJobsFile { get; set; }
     // storage for comments and whitespace
     TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
@@ -18,6 +21,10 @@ public class Config : ITomlMetadataProvider
     // storage for comments and whitespace
     TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
 
+    /// <summary>
+    /// Save this configuration.
+    /// </summary>
+    /// <returns><see langword="true"/> when saved successfully.</returns>
     public bool Save()
     {
         // create missing directory
@@ -31,10 +38,22 @@ public class Config : ITomlMetadataProvider
     }
 }
 
+/// <summary>
+/// Handles common settings between Daemon and Editor.
+/// </summary>
 public static class Settings
 {
+    /// <summary>
+    /// Location of users application configuration.
+    /// </summary>
     internal readonly static string ConfigFile = $"/home/{Environment.UserName}/.config/gcron/config.toml";
+    /// <summary>
+    /// Location where registered job configurations are stored.
+    /// </summary>
     public readonly static string SpoolLocation = "/var/spool/gcron";
+    /// <summary>
+    /// Default editor for cases where it is not defined by env variable EDITOR.
+    /// </summary>
     public readonly static string DefaultEditor = "nano";
 
     private static Config GetEmptyConfig()
@@ -45,6 +64,10 @@ public static class Settings
         };
     }
 
+    /// <summary>
+    /// Load persistent application configuration.
+    /// </summary>
+    /// <returns>The configuration.</returns>
     public static Config Load()
     {
         if (!File.Exists(ConfigFile))
