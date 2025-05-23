@@ -15,9 +15,6 @@
     <ProjectReference Include="../../src/Common/Common.csproj" />
     <ProjectReference Include="../../src/Daemon/Daemon.csproj" />
 
-    <ProjectReference Include="../src/Common/Common.csproj" />
-    <ProjectReference Include="../src/Daemon/Daemon.csproj" />
-
     <Using Include="Xunit" />
   </ItemGroup>
 
