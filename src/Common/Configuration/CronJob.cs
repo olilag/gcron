@@ -104,7 +104,7 @@ public readonly record struct DayOfMonth : IEnumerable<byte>
     /// Initializes a new instance of <see cref="DayOfMonth" /> struct that represents given days.
     /// </summary>
     /// <param name="days">Days that should be represented. Must be between 1-31.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when a value in <see cref="days" /> is outside of 1-31.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when a value in <paramref name="days"/> is outside of 1-31.</exception>
     public DayOfMonth(params byte[] days)
     {
         uint acc = 0;
@@ -190,7 +190,7 @@ public readonly record struct Hour : IEnumerable<byte>
     /// Initializes a new instance of <see cref="Hour" /> struct that represents given hours.
     /// </summary>
     /// <param name="hours">Hours that should be represented. Must be between 0-23.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when a value in <see cref="hours" /> is outside of 0-23.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when a value in <paramref name="hours"/> is outside of 0-23.</exception>
     public Hour(params byte[] hours)
     {
         uint acc = 0;
@@ -276,7 +276,7 @@ public readonly record struct Minute : IEnumerable<byte>
     /// Initializes a new instance of <see cref="Minute" /> struct that represents given minutes.
     /// </summary>
     /// <param name="minutes">Minutes that should be represented. Must be between 0-59.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when a value in <see cref="minutes" /> is outside of 0-59.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when a value in <paramref name="minutes"/> is outside of 0-59.</exception>
     public Minute(params byte[] minutes)
     {
         ulong acc = 0;
