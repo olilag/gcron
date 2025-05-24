@@ -10,7 +10,7 @@ using Common.Configuration;
 namespace Daemon;
 
 /// <summary>
-/// 
+/// Represents long running program which schedules and executes jobs defined in a schedule.
 /// </summary>
 public class Daemon
 {
@@ -117,6 +117,9 @@ public class Daemon
         return parser.Parse();
     }
 
+    /// <summary>
+    /// Main loop of daemon. Waits for changes in config by the editor, then updates the schedule. Runs job scheduling in separate thread. Executes jobs in another thread.
+    /// </summary>
     public void MainLoop()
     {
         // TODO: store last config somewhere
