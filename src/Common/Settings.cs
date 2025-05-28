@@ -5,6 +5,9 @@ using Tomlyn.Model;
 
 namespace Common;
 
+/// <summary>
+/// Represents settings for daemons configuration files.
+/// </summary>
 public class ConfigurationSettings : ITomlMetadataProvider
 {
     /// <summary>
@@ -15,6 +18,9 @@ public class ConfigurationSettings : ITomlMetadataProvider
     TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
 }
 
+/// <summary>
+/// Represents a config file. Saved as in TOML format.
+/// </summary>
 public class Config : ITomlMetadataProvider
 {
     public ConfigurationSettings Configuration { get; set; } = new();
@@ -46,7 +52,7 @@ public static class Settings
     /// <summary>
     /// Location of users application configuration.
     /// </summary>
-    internal readonly static string ConfigFile = $"/home/{Environment.UserName}/.config/gcron/config.toml";
+    internal readonly static string ConfigFile = $"/home/{Environment.UserName}/.config/gcrond/config.toml";
     /// <summary>
     /// Location where registered job configurations are stored.
     /// </summary>

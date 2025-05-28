@@ -17,6 +17,12 @@ public static class Editor
         return Environment.UserName;
     }
 
+    /// <summary>
+    /// Checks if there is a job configuration for a user.
+    /// </summary>
+    /// <param name="user">User to check for.</param>
+    /// <param name="location">Location of the configuration.</param>
+    /// <returns><see langword="true"/> if it exists.</returns>
     private static bool JobConfigurationExists(string user, out string location)
     {
         location = Path.Join(Settings.SpoolLocation, user);
@@ -124,13 +130,17 @@ public static class Editor
         return process;
     }
 
+    /// <summary>
+    /// Notifies daemon that the file is changed.
+    /// </summary>
+    /// <param name="fileName">File that was changed.</param>
+    /// <returns>Return code for main.</returns>
     private static int NotifyDaemon(string fileName)
     {
         try
         {
             var client = new Client();
             using var conn = client.Connect();
-            Console.WriteLine("Connected to daemon");
             conn.WriteString(fileName);
             return 0;
         }
@@ -143,13 +153,17 @@ public static class Editor
 
     private static int InstallConfig(string sourceFileName, string destinationFileName)
     {
-        // handle errors
+        // TODO: handle errors
         var dir = Path.GetDirectoryName(destinationFileName);
         Directory.CreateDirectory(dir!);
         File.Copy(sourceFileName, destinationFileName, true);
         return NotifyDaemon(destinationFileName);
     }
 
+    /// <summary>
+    /// Gets most recently created temporary file. Creates one if it doesn't exist.
+    /// </summary>
+    /// <returns>Location of a temporary file.</returns>
     private static string GetTempFile()
     {
         var cache = PersistentCache.Load();

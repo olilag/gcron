@@ -23,6 +23,10 @@ public class Daemon
     private HashSet<CronJob> _configuration = [];
     private readonly Config _appCfg = Settings.Load();
 
+    /// <summary>
+    /// Main loop for execute thread. Waits on a conditional variable (<see cref="AutoResetEvent"/>), then execute all jobs in <see cref="_currentJobs"/>.
+    /// Conditional variable is set by scheduling thread.
+    /// </summary>
     private void ExecuteThread()
     {
         while (true)
@@ -41,6 +45,10 @@ public class Daemon
         }
     }
 
+    /// <summary>
+    /// Loads job configuration from last place a correct configuration was saved.
+    /// </summary>
+    /// <returns>Loaded jobs.</returns>
     private HashSet<CronJob> LoadPersistentConfiguration()
     {
         // store path to last correct config file to a file somewhere
@@ -60,6 +68,13 @@ public class Daemon
         }
     }
 
+    /// <summary>
+    /// Main loop of daemons scheduling. Loads initial jobs.
+    /// In each iteration it pushes the top job for executions and reschedules it.
+    /// Then waits until the next execution time of top job.
+    /// If there are no jobs, it sleeps.
+    /// <see cref="MainLoop"/> can interrupt this thread if a new configuration is ready.
+    /// </summary>
     private void SchedulerThread()
     {
         // load initial jobs
@@ -96,12 +111,13 @@ public class Daemon
                     var (nextExecution, _) = _scheduler.Peek();
                     var now = DateTime.Now;
                     var waitFor = nextExecution - now;
+
                     // wait until next execution
                     Console.WriteLine($"Waiting for next execution time: {nextExecution} - {now} = {waitFor}");
                     // ensure that waitFor is not negative (shouldn't happen, unless crazy rescheduling, I think)
                     _cfgLock.Exit();
                     Thread.Sleep(waitFor);
-                    Console.WriteLine("Waked up from waiting for next event");
+                    Console.WriteLine("Woken up from waiting for next event");
                 }
                 else
                 {
@@ -125,7 +141,11 @@ public class Daemon
     }
 
     /// <summary>
-    /// Main loop of daemon. Waits for changes in config by the editor, then updates the schedule. Runs job scheduling in separate thread. Executes jobs in another thread.
+    /// Main loop of daemon. Waits for changes in config by the editor, then updates the schedule.
+    /// Spawns a thread for scheduling.
+    /// Spawns a thread for execution.
+    /// Its loop consists of waiting for an editor to notify it that a configuration has changed.
+    /// Then it checks if the configuration is valid and notifies schedule thread for changes.
     /// </summary>
     public void MainLoop()
     {
@@ -161,7 +181,6 @@ public class Daemon
                         _appCfg.Save();
                     }
                 }
-                Console.WriteLine("Loop end");
             }
             catch (Exception ex)
             {

@@ -6,6 +6,9 @@ using Common.Configuration.Readers;
 
 namespace Common.Configuration;
 
+/// <summary>
+/// Represents errors that occur when parsing a job configuration.
+/// </summary>
 public class InvalidConfigurationException : Exception
 {
     public InvalidConfigurationException() { }
