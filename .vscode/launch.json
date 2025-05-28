@@ -15,9 +15,9 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Daemon/bin/Debug/net9.0/Daemon.dll",
+            "program": "${workspaceFolder}/src/Daemon/bin/Debug/net9.0/Daemon.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/Daemon",
+            "cwd": "${workspaceFolder}/src/Daemon",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false
@@ -31,9 +31,9 @@
           "request": "launch",
           "preLaunchTask": "build",
           // If you have changed target frameworks, make sure to update the program path.
-          "program": "${workspaceFolder}/Editor/bin/Debug/net9.0/Editor.dll",
+          "program": "${workspaceFolder}/src/Editor/bin/Debug/net9.0/Editor.dll",
           "args": [],
-          "cwd": "${workspaceFolder}/Editor",
+          "cwd": "${workspaceFolder}/src/Editor",
           // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
           "console": "internalConsole",
           "stopAtEntry": false
