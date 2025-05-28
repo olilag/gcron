@@ -52,7 +52,7 @@ public static class Settings
     /// <summary>
     /// Location of users application configuration.
     /// </summary>
-    internal readonly static string ConfigFile = $"/home/{Environment.UserName}/.config/gcrond/config.toml";
+    internal readonly static string ConfigFile = $"/home/{Environment.UserName}/.config/gcron/config.toml";
     /// <summary>
     /// Location where registered job configurations are stored.
     /// </summary>
