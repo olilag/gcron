@@ -297,7 +297,7 @@ public readonly record struct Minute : IEnumerable<byte>
     /// Creates a new instance of <see cref="Minute" /> that represents all minutes.
     /// </summary>
     /// <returns><see cref="Minute" /> instance that represents all minutes.</returns>
-    public static Minute All() => new((1UL << 60) - 1);
+    public static Minute All => new((1UL << 60) - 1);
 
     public IEnumerator<byte> GetEnumerator()
     {

@@ -62,9 +62,9 @@ public class Parser_UnitTests
         // Arrange
         var input = "* * * * * echo Hello World!";
         using var parser = new Parser(new StringReader(input));
-        var minutes = Minute.All();
-        var hours = Hour.All();
-        var dayOfMonth = DayOfMonth.All();
+        var minutes = Minute.All;
+        var hours = Hour.All;
+        var dayOfMonth = DayOfMonth.All;
         var month = Month.All;
         var dayOfWeek = DayOfWeek.All;
         var command = "echo Hello World!";
@@ -119,9 +119,9 @@ public class Parser_UnitTests
         // Arrange
         var input = "* * * * * echo Hello World!";
         using var parser = new Parser(new StringReader(input));
-        var minutes = Minute.All();
-        var hours = Hour.All();
-        var dayOfMonth = DayOfMonth.All();
+        var minutes = Minute.All;
+        var hours = Hour.All;
+        var dayOfMonth = DayOfMonth.All;
         var month = Month.All;
         var dayOfWeek = DayOfWeek.All;
         var command = "echo Hello World!";
@@ -138,9 +138,9 @@ public class Parser_UnitTests
         // Arrange
         var input = "* * * * * echo Hello World!\n";
         using var parser = new Parser(new StringReader(input));
-        var minutes = Minute.All();
-        var hours = Hour.All();
-        var dayOfMonth = DayOfMonth.All();
+        var minutes = Minute.All;
+        var hours = Hour.All;
+        var dayOfMonth = DayOfMonth.All;
         var month = Month.All;
         var dayOfWeek = DayOfWeek.All;
         var command = "echo Hello World!";

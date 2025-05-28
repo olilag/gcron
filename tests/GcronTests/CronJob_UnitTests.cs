@@ -175,7 +175,7 @@ public class CronJob_UnitTests
         // Arrange
         byte[] expected = [.. Enumerable.Range(0, 60).Select(idx => (byte)idx)];
         // Act
-        var minute = Minute.All();
+        var minute = Minute.All;
         // Assert
         Assert.Equal(expected, minute);
         Assert.Equal(new(expected), minute);
