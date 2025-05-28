@@ -16,7 +16,7 @@ class Scheduler
     /// <summary>
     /// <see langword="true"/> when no events are scheduled.
     /// </summary>
-    public bool IsEmpty { get { return _scheduledEvents.Count != 0; } }
+    public bool IsEmpty { get { return _scheduledEvents.Count == 0; } }
 
     /// <summary>
     /// Calculates the time of jobs next execution.
