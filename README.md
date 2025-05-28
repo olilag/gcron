@@ -1,12 +1,13 @@
 # gcron
 
-Gcron is a .NET implementation of linux [cron](https://en.wikipedia.org/wiki/Cron) utility.
+Gcron is a .NET implementation of [cron](https://en.wikipedia.org/wiki/Cron) utility.
 
 ## Description
 
-The project consists of two parts an [Editor](src/Editor) for managing job configuration and [Daemon](src/Daemon) which keeps track of users job configuration and executes them.
+The project consists of two parts, an [Editor](src/Editor) for managing job configuration and a [Daemon](src/Daemon) which keeps track of users job configuration and executes them.
 
 The following crontab syntax is supported.
+Each field can also contain comma separated values, ranges (e.g. `1-5`) or `*` (all values allowed).
 
 ```text
 # * * * * * <command to execute>
@@ -35,6 +36,11 @@ To fix this either create the directory manually and `chown` it to yourself or r
 1. Launch daemon by running `dotnet run --project src/Daemon`.
 2. Launch editor by running `dotnet run --project src/Editor` - it will open an editor to edit your current configuration.
 3. After saving the configuration, daemon will run the jobs according to schedule.
+
+## Documentation
+
+This project uses [docfx](https://dotnet.github.io/docfx/) to generate documentation.
+You can build it by running `docfx docfx.json --serve` in the [docs](docs) directory.
 
 ## Authors
 
