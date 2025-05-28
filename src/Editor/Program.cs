@@ -66,8 +66,5 @@ class Program
         }, editOption, validateOption, listOption, removeOption);
         return rootCommand.Invoke(args);
         // TODO: add option -e -> open editor (save file to /var/spool/gcron/{user} on Linux), edit it in some temp file
-        // TODO: add option -l -> list jobs
-        // TODO: add option -r -> remove current jobs
-        // TODO: add option -T file -> only validate
     }
 }

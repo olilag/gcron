@@ -19,6 +19,7 @@ public class Daemon
     private readonly AutoResetEvent _executeSignal = new(false);
     private CronJob[] _currentJobs = [];
     private bool _configChanged = false;
+    private readonly Lock _cfgLock = new();
     private HashSet<CronJob> _configuration = [];
     private readonly Config _appCfg = Settings.Load();
 
@@ -62,12 +63,16 @@ public class Daemon
     private void SchedulerThread()
     {
         // load initial jobs
-        _configuration = LoadPersistentConfiguration();
-        _scheduler.LoadConfiguration(_configuration);
+        lock (_cfgLock)
+        {
+            _configuration = LoadPersistentConfiguration();
+            _scheduler.LoadConfiguration(_configuration);
+        }
         while (true)
         {
             try
             {
+                _cfgLock.Enter();
                 if (_configChanged)
                 {
                     Console.WriteLine("Loading config");
@@ -81,8 +86,8 @@ public class Daemon
                         var (_, jobs) = _scheduler.Peek();
                         _currentJobs = new CronJob[jobs.Count];
                         jobs.CopyTo(_currentJobs);
-                        _scheduler.RescheduleTop();
                         _executeSignal.Set();
+                        _scheduler.RescheduleTop();
                     }
                     else
                     {
@@ -94,6 +99,7 @@ public class Daemon
                     // wait until next execution
                     Console.WriteLine($"Waiting for next execution time: {nextExecution} - {now} = {waitFor}");
                     // ensure that waitFor is not negative (shouldn't happen, unless crazy rescheduling, I think)
+                    _cfgLock.Exit();
                     Thread.Sleep(waitFor);
                     Console.WriteLine("Waked up from waiting for next event");
                 }
@@ -101,6 +107,7 @@ public class Daemon
                 {
                     // wait for config changes
                     Console.WriteLine("Waiting for change in config");
+                    _cfgLock.Exit();
                     Thread.Sleep(Timeout.Infinite);
                 }
             }
@@ -122,8 +129,6 @@ public class Daemon
     /// </summary>
     public void MainLoop()
     {
-        // TODO: store last config somewhere
-        // MOSTLY DONE schedule TODO: add day of week support
         // TODO: maybe better logging
         var executor = new Thread(ExecuteThread);
         var scheduler = new Thread(SchedulerThread);
@@ -143,15 +148,18 @@ public class Daemon
                 using var conn = server.WaitForConnection();
                 var configFile = conn.ReadString();
                 var newConfiguration = LoadJobConfiguration(configFile);
-                _configChanged = !newConfiguration.SetEquals(_configuration);
-                Console.WriteLine(_configChanged);
-                if (_configChanged)
+                // check changes
+                if (!newConfiguration.SetEquals(_configuration))
                 {
-                    _configuration = newConfiguration;
-                    Console.WriteLine("Wake up scheduler");
-                    scheduler.Interrupt();
-                    _appCfg.Configuration.InitialJobsFile = configFile;
-                    _appCfg.Save();
+                    lock (_cfgLock)
+                    {
+                        _configChanged = true;
+                        _configuration = newConfiguration;
+                        Console.WriteLine("Wake up scheduler");
+                        scheduler.Interrupt();
+                        _appCfg.Configuration.InitialJobsFile = configFile;
+                        _appCfg.Save();
+                    }
                 }
                 Console.WriteLine("Loop end");
             }

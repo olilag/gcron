@@ -19,11 +19,11 @@ class Scheduler
     public bool IsEmpty { get { return _scheduledEvents.Count != 0; } }
 
     /// <summary>
-    /// Calculated time of jobs next execution.
+    /// Calculates the time of jobs next execution.
     /// </summary>
     /// <param name="job">Job whose execution time will be calculated.</param>
     /// <param name="startTime">Time at which to start the calculation.</param>
-    /// <returns>Time when to job should be executed next.</returns>
+    /// <returns>Time when the job should be executed next.</returns>
     internal static DateTime GetNextExecution(CronJob job, DateTime startTime)
     {
         var startYear = startTime.Year;
