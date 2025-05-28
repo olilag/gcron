@@ -34,7 +34,11 @@ To fix this either create the directory manually and `chown` it to yourself or r
 ### Executing program
 
 1. Launch daemon by running `dotnet run --project src/Daemon`.
-2. Launch editor by running `dotnet run --project src/Editor` - it will open an editor to edit your current configuration.
+2. Launch editor by running `dotnet run --project src/Editor`:
+    - `-l` - will list jobs in current configuration
+    - `-e` - will open editor (`$EDITOR` or `nano`) to edit current configuration
+    - `-r` - will remove current configuration
+    - `-T <FILE>` - will check if `<FILE>` contains valid configuration
 3. After saving the configuration, daemon will run the jobs according to schedule.
 
 ## Documentation
