@@ -65,6 +65,5 @@ class Program
             return Task.Run(() => rv);
         }, editOption, validateOption, listOption, removeOption);
         return rootCommand.Invoke(args);
-        // TODO: add option -e -> open editor (save file to /var/spool/gcron/{user} on Linux), edit it in some temp file
     }
 }
