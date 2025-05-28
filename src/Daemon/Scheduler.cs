@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Common.Configuration;
 
@@ -64,6 +65,10 @@ class Scheduler
             day++;
         }
 
+        // Weekday
+        var nextExecutionByWeekday = new DateTime(startYear, startMonth, startDay, hour, minute, 0).AddDays(day - startDay);
+        nextExecutionByWeekday = nextExecutionByWeekday.AddDays(job.Weekdays.DaysUntilNext(nextExecutionByWeekday.DayOfWeek));
+
         // Day
         var dayRv = job.Days.GetNext(day);
 retry_day:
@@ -112,9 +117,32 @@ retry_day:
             goto retry_day;
         }
 
-        var nextExecution = new DateTime(year, month, day, hour, minute, 0);
-        // TODO: handle weekdays (do a second search based on weekday and return the one that is closer to today)
-        return nextExecution;
+        var nextExecutionByDay = new DateTime(year, month, day, hour, minute, 0);
+
+        // If month, day of month, and day of week are all asterisks, every day shall be matched.
+        // If either the month or day of month is specified as an element or list, but the day of week is an asterisk,
+        // the month and day of month fields shall specify the days that match. If both month and day of month are specified as an asterisk,
+        // but day of week is an element or list, then only the specified days of the week match.
+        // Finally, if either the month or day of month is specified as an element or list,
+        // and the day of week is also specified as an element or list, then any day matching either the month and day of month,
+        // or the day of week, shall be matched.
+        if ((job.Days.IsRestricted || job.Months.IsRestricted()) && job.Weekdays.IsRestricted())
+        {
+            return nextExecutionByWeekday < nextExecutionByDay ? nextExecutionByWeekday : nextExecutionByDay;
+        }
+        else if ((job.Days.IsRestricted || job.Months.IsRestricted()) && !job.Weekdays.IsRestricted())
+        {
+            return nextExecutionByDay;
+        }
+        else if (!(job.Days.IsRestricted || job.Months.IsRestricted()) && job.Weekdays.IsRestricted())
+        {
+            return nextExecutionByWeekday;
+        }
+        else
+        {
+            Debug.Assert(nextExecutionByDay == nextExecutionByWeekday, "Execution dates differ when everything is unrestricted");
+            return nextExecutionByWeekday;
+        }
     }
 
     /// <summary>

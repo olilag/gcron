@@ -189,4 +189,25 @@ public class CronJob_UnitTests
         // Assert
         Assert.Throws<ArgumentOutOfRangeException>(() => new Minute(minute));
     }
+
+    [Theory]
+    [InlineData(Common.Configuration.DayOfWeek.Monday, System.DayOfWeek.Monday, 0)]
+    [InlineData(Common.Configuration.DayOfWeek.Monday, System.DayOfWeek.Tuesday, 6)]
+    [InlineData(Common.Configuration.DayOfWeek.Monday, System.DayOfWeek.Sunday, 1)]
+    [InlineData(Common.Configuration.DayOfWeek.Sunday, System.DayOfWeek.Sunday, 0)]
+    [InlineData(Common.Configuration.DayOfWeek.Sunday, System.DayOfWeek.Saturday, 1)]
+    [InlineData(Common.Configuration.DayOfWeek.All, System.DayOfWeek.Saturday, 0)]
+    [InlineData(Common.Configuration.DayOfWeek.All, System.DayOfWeek.Sunday, 0)]
+    [InlineData(Common.Configuration.DayOfWeek.Sunday | Common.Configuration.DayOfWeek.Wednesday, System.DayOfWeek.Saturday, 1)]
+    [InlineData(Common.Configuration.DayOfWeek.Sunday | Common.Configuration.DayOfWeek.Wednesday, System.DayOfWeek.Tuesday, 1)]
+    [InlineData(Common.Configuration.DayOfWeek.Sunday | Common.Configuration.DayOfWeek.Wednesday, System.DayOfWeek.Wednesday, 0)]
+    [InlineData(Common.Configuration.DayOfWeek.Sunday | Common.Configuration.DayOfWeek.Wednesday, System.DayOfWeek.Friday, 2)]
+    [InlineData(Common.Configuration.DayOfWeek.Sunday | Common.Configuration.DayOfWeek.Wednesday, System.DayOfWeek.Monday, 2)]
+    public void DayOfWeek_DaysUntilNext(Common.Configuration.DayOfWeek dayOfWeek, System.DayOfWeek current, int expected)
+    {
+        // Act
+        var actual = dayOfWeek.DaysUntilNext(current);
+        // Assert
+        Assert.Equal(expected, actual);
+    }
 }

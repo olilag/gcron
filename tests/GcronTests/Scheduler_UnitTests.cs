@@ -34,6 +34,12 @@ public class Scheduler_UnitTests
         yield return new object[] { "* * * 1 * echo", new DateTime(2025, 1, 30, 0, 0, 0), new DateTime(2025, 1, 30, 0, 0, 0) };
         yield return new object[] { "* * * 1 * echo", new DateTime(2025, 2, 1, 0, 0, 0), new DateTime(2026, 1, 1, 0, 0, 0) };
         yield return new object[] { "* * 29 2 * echo", new DateTime(2025, 2, 1, 0, 0, 0), new DateTime(2028, 2, 29, 0, 0, 0) };
+        yield return new object[] { "* * * * * echo", new DateTime(2025, 1, 1, 23, 59, 0), new DateTime(2025, 1, 1, 23, 59, 0) };
+        yield return new object[] { "* * * * 1 echo", new DateTime(2025, 1, 1, 0, 0, 0), new DateTime(2025, 1, 6, 0, 0, 0) };
+        yield return new object[] { "* * * * 3 echo", new DateTime(2025, 1, 1, 0, 0, 0), new DateTime(2025, 1, 1, 0, 0, 0) };
+        yield return new object[] { "0 * * * 3 echo", new DateTime(2025, 1, 1, 23, 59, 0), new DateTime(2025, 1, 8, 0, 0, 0) };
+        yield return new object[] { "0 * * 2 3 echo", new DateTime(2025, 1, 1, 0, 0, 0), new DateTime(2025, 1, 1, 0, 0, 0) };
+        yield return new object[] { "0 * * 1 5 echo", new DateTime(2025, 1, 1, 0, 0, 0), new DateTime(2025, 1, 1, 0, 0, 0) };
     }
 
     [Theory]

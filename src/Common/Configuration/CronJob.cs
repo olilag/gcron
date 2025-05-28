@@ -32,6 +32,21 @@ public static class DayOfWeekExtensions
         }
         return (dayOfWeek & (DayOfWeek)(1 << (int)weekday - 1)) != DayOfWeek.None;
     }
+
+    public static bool IsRestricted(this DayOfWeek dayOfWeek) => dayOfWeek != DayOfWeek.All;
+
+    public static int DaysUntilNext(this DayOfWeek dayOfWeek, System.DayOfWeek currentWeekday)
+    {
+        for (int s = (int)currentWeekday; s < (int)currentWeekday + 7; ++s)
+        {
+            var nextWeekday = (System.DayOfWeek)(s % 7);
+            if (dayOfWeek.Contains(nextWeekday))
+            {
+                return s - (int)currentWeekday;
+            }
+        }
+        throw new InvalidOperationException("Unreachable code");
+    }
 }
 
 /// <summary>
@@ -91,6 +106,8 @@ public static class MonthExtensions
         }
         throw new ArgumentException("No months found");
     }
+
+    public static bool IsRestricted(this Month month) => month != Month.All;
 }
 
 /// <summary>
@@ -159,6 +176,8 @@ public readonly record struct DayOfMonth : IEnumerable<byte>
         }
         return null;
     }
+
+    public bool IsRestricted => _value != All._value;
 
     public override string ToString()
     {
