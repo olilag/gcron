@@ -1,0 +1,8 @@
+- name: Project structure
+  href: project-structure.md
+- name: Editor
+  href: editor.md
+- name: Daemon
+  href: daemon.md
+- name: Inter-process communication
+  href: communication.md
