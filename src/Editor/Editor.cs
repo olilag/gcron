@@ -161,27 +161,12 @@ public static class Editor
     }
 
     /// <summary>
-    /// Gets most recently created temporary file. Creates one if it doesn't exist.
-    /// </summary>
-    /// <returns>Location of a temporary file.</returns>
-    private static string GetTempFile()
-    {
-        var cache = PersistentCache.Load();
-        if (!File.Exists(cache.TempFile))
-        {
-            cache.TempFile = Path.GetTempFileName();
-            cache.Save();
-        }
-        return cache.TempFile;
-    }
-
-    /// <summary>
     /// Edits current job configuration.
     /// </summary>
     /// <returns>Return code for main.</returns>
     public static int EditJobs()
     {
-        var tmpFile = GetTempFile();
+        using var tmpFile = new TempFile();
         Console.WriteLine(tmpFile);
         var user = GetCurrentUser();
         if (JobConfigurationExists(user, out var jobFile))
