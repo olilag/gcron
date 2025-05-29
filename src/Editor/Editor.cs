@@ -88,7 +88,7 @@ public static class Editor
     }
 
     /// <summary>
-    /// Deletes current job configuration.
+    /// Deletes current user's job configuration.
     /// </summary>
     /// <returns>Return code for main.</returns>
     public static int ClearJobs()
@@ -120,6 +120,11 @@ public static class Editor
         return e;
     }
 
+    /// <summary>
+    /// Open given file in an editor and returns a <see cref="Process"/>.
+    /// </summary>
+    /// <param name="fileName">File to edit in editor.</param>
+    /// <returns>Process with the editor.</returns>
     private static Process LaunchEditor(string fileName)
     {
         var process = new Process();
@@ -161,7 +166,7 @@ public static class Editor
     }
 
     /// <summary>
-    /// Edits current job configuration.
+    /// Edits current user's job configuration.
     /// </summary>
     /// <returns>Return code for main.</returns>
     public static int EditJobs()
@@ -171,11 +176,9 @@ public static class Editor
         var user = GetCurrentUser();
         if (JobConfigurationExists(user, out var jobFile))
         {
-            // maybe errors?
             File.Copy(jobFile, tmpFile, true);
         }
         using var p = LaunchEditor(tmpFile);
-        // handle errors
         p.WaitForExit();
         try
         {
@@ -184,7 +187,6 @@ public static class Editor
         }
         catch (InvalidConfigurationException ex)
         {
-            // handle errors
             Console.WriteLine(ex.Message);
             return 2;
         }

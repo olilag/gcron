@@ -47,7 +47,8 @@ public class Daemon(ILoggerFactory loggerFactory)
     private readonly Config _appCfg = Settings.Load();
 
     /// <summary>
-    /// Main loop for execute thread. Waits on a conditional variable (<see cref="AutoResetEvent"/>), then execute all jobs in <see cref="_currentJobs"/>.
+    /// Main loop for execute thread.
+    /// Waits on a conditional variable (<see cref="AutoResetEvent"/>), then executes all jobs in <see cref="_currentJobs"/>.
     /// Conditional variable is set by scheduling thread.
     /// </summary>
     private void ExecuteThread()
@@ -90,8 +91,9 @@ public class Daemon(ILoggerFactory loggerFactory)
     }
 
     /// <summary>
-    /// Main loop of daemons scheduling. Loads initial jobs.
-    /// In each iteration it pushes the top job for executions and reschedules it.
+    /// Main loop of daemon's scheduling.
+    /// Loads initial jobs.
+    /// In each iteration it pushes the top job for execution and reschedules it.
     /// Then waits until the next execution time of top job.
     /// If there are no jobs, it sleeps.
     /// <see cref="MainLoop"/> can interrupt this thread if a new configuration is ready.
@@ -129,14 +131,13 @@ public class Daemon(ILoggerFactory loggerFactory)
                     {
                         _configChanged = false;
                     }
+                    _cfgLock.Exit();
                     var (nextExecution, _) = _scheduler.Peek();
                     var now = DateTime.Now;
                     var waitFor = nextExecution - now;
 
                     // wait until next execution
                     _schedulerLogger.LogInformation("Waiting for next execution time: {} - {} = {}", nextExecution, now, waitFor);
-                    // ensure that waitFor is not negative (shouldn't happen, unless crazy rescheduling, I think)
-                    _cfgLock.Exit();
                     Thread.Sleep(waitFor);
                     _schedulerLogger.LogInformation("Woken up from waiting for next event");
                 }
@@ -158,6 +159,7 @@ public class Daemon(ILoggerFactory loggerFactory)
             }
             finally
             {
+                // in case there was an an unhandled exception and we are holding the lock 
                 if (_cfgLock.IsHeldByCurrentThread)
                     _cfgLock.Exit();
             }
@@ -171,7 +173,7 @@ public class Daemon(ILoggerFactory loggerFactory)
     }
 
     /// <summary>
-    /// Main loop of daemon. Waits for changes in config by the editor, then updates the schedule.
+    /// Daemon's main loop. Waits for changes in config by the editor, then updates the schedule.
     /// Spawns a thread for scheduling.
     /// Spawns a thread for execution.
     /// Its loop consists of waiting for an editor to notify it that a configuration has changed.

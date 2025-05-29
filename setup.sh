@@ -1,7 +1,7 @@
 #!/bin/bash
 
 umask u=rwx,go=rx
-# for users configuration
+# for user's configuration
 sudo mkdir -p /var/spool/gcron
 # log file
 sudo touch /var/log/gcron.log

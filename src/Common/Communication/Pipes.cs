@@ -10,6 +10,10 @@ static class PipeConfig
     public const PipeDirection Direction = PipeDirection.InOut;
 }
 
+/// <summary>
+/// Wraps a <see cref="NamedPipeServerStream"/> to provide <see cref="StringProtocol"/> to exchange data.
+/// Uses values from <see cref="PipeConfig"/> to configure the server.
+/// </summary>
 public sealed class Server : IDisposable
 {
     private readonly NamedPipeServerStream _pipeServer;
@@ -45,6 +49,10 @@ public sealed class Server : IDisposable
     }
 }
 
+/// <summary>
+/// Wraps a <see cref="NamedPipeClientStream"/> to provide <see cref="StringProtocol"/> to exchange data.
+/// Uses values from <see cref="PipeConfig"/> to configure the client.
+/// </summary>
 public sealed class Client : IDisposable
 {
     const int Timeout = 1000;
@@ -70,7 +78,7 @@ public sealed class Client : IDisposable
         }
         catch (TimeoutException)
         {
-            // TODO: throw something
+            // just rethrow
             throw;
         }
         return new(_pipeClient);

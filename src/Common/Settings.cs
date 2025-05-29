@@ -19,7 +19,7 @@ public class ConfigurationSettings : ITomlMetadataProvider
 }
 
 /// <summary>
-/// Represents a config file. Saved as in TOML format.
+/// Represents a config file. Saved in TOML format.
 /// </summary>
 public class Config : ITomlMetadataProvider
 {
@@ -33,7 +33,7 @@ public class Config : ITomlMetadataProvider
     /// <returns><see langword="true"/> when saved successfully.</returns>
     public bool Save()
     {
-        // create missing directory
+        // create directory if missing
         var parentDir = Path.GetDirectoryName(Settings.ConfigFile);
         if (!string.IsNullOrEmpty(parentDir))
         {

@@ -33,16 +33,16 @@ class Program
 
     static int Main(string[] args)
     {
-        var editOption = new Option<bool?>(["-e"], "edit configuration")
+        var editOption = new Option<bool?>(["-e"], "edit current user's job configuration")
         {
             Arity = ArgumentArity.Zero
         };
         var validateOption = new Option<FileInfo>(["-T"], "verify file syntax");
-        var listOption = new Option<bool?>(["-l"], "list current jobs")
+        var listOption = new Option<bool?>(["-l"], "list current user's jobs")
         {
             Arity = ArgumentArity.Zero
         };
-        var removeOption = new Option<bool?>(["-r"], "remove current jobs")
+        var removeOption = new Option<bool?>(["-r"], "remove current user's jobs")
         {
             Arity = ArgumentArity.Zero
         };
