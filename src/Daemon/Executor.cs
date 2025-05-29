@@ -20,7 +20,8 @@ class Executor(ILogger logger)
     public void Execute(string command)
     {
         var cmd = Settings.ExecuteShell;
-        var args = $"-c \"{command}\"";
+        // escape " in command
+        var args = $"-c \"{command.Replace("\"", "\\\"")}\"";
         try
         {
             using var proc = new Process();
@@ -28,19 +29,12 @@ class Executor(ILogger logger)
             proc.StartInfo.FileName = cmd;
             proc.StartInfo.Arguments = args;
             proc.StartInfo.CreateNoWindow = true;
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.UseShellExecute = true;
+            proc.StartInfo.RedirectStandardError = false;
+            proc.StartInfo.RedirectStandardOutput = false;
             proc.Start();
             proc.WaitForExit();
-            var err = proc.StandardError.ReadToEnd();
-            if (!string.IsNullOrEmpty(err))
-            {
-                _logger.LogError("Executed: '{}' with args '{}', stderr: '{}'", cmd, args, err.Trim().ReplaceLineEndings(" "));
-            }
-            else
-            {
-                _logger.LogInformation("Executed: '{}' with args '{}'", cmd, args);
-            }
+            _logger.LogInformation("Executed: '{}' with args {}", cmd, args);
         }
         catch (Exception ex)
         {
