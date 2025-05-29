@@ -103,7 +103,7 @@ public class Daemon(ILoggerFactory loggerFactory)
         lock (_cfgLock)
         {
             _configuration = LoadPersistentConfiguration();
-            _scheduler.LoadConfiguration(_configuration);
+            _configChanged = true;
         }
         while (true)
         {
