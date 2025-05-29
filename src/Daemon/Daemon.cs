@@ -61,7 +61,6 @@ public class Daemon(ILoggerFactory loggerFactory)
             foreach (var job in _currentJobs)
             {
                 var command = job.Command;
-                _executorLogger.LogInformation("Executing command: '{}'", command);
                 Task.Run(() => _executor.Execute(command)).Forget();
             }
         }
@@ -118,6 +117,7 @@ public class Daemon(ILoggerFactory loggerFactory)
                 }
                 if (!_scheduler.IsEmpty)
                 {
+                    // no changes in config => the wake-up wasn't caused by an interrupt from editor => look at top jobs execute and reschedule them
                     if (!_configChanged)
                     {
                         _schedulerLogger.LogInformation("Rescheduling top job");
@@ -127,6 +127,7 @@ public class Daemon(ILoggerFactory loggerFactory)
                         _executeSignal.Set();
                         _scheduler.RescheduleTop();
                     }
+                    // there were changes => we were interrupted, only calculate time of next execution and sleep until then
                     else
                     {
                         _configChanged = false;
@@ -134,6 +135,8 @@ public class Daemon(ILoggerFactory loggerFactory)
                     _cfgLock.Exit();
                     var (nextExecution, _) = _scheduler.Peek();
                     var now = DateTime.Now;
+                    // add 5 seconds to guarantee that the next wake-up will happen in the correct minute, otherwise scheduling will break
+                    nextExecution = nextExecution.AddSeconds(5);
                     var waitFor = nextExecution - now;
 
                     // wait until next execution
