@@ -6,16 +6,39 @@ using System.Threading.Tasks;
 using Common;
 using Common.Communication;
 using Common.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Daemon;
+
+public static class TaskExtensions
+{
+    /// <summary>
+    /// Observes the task to avoid the UnobservedTaskException event to be raised.
+    /// </summary>
+    public static void Forget(this Task task)
+    {
+        if (!task.IsCompleted || task.IsFaulted)
+        {
+            _ = ForgetAwaited(task);
+        }
+
+        async static Task ForgetAwaited(Task task)
+        {
+            await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        }
+    }
+}
 
 /// <summary>
 /// Represents long running program which schedules and executes jobs defined in a schedule.
 /// </summary>
-public class Daemon
+public class Daemon(ILoggerFactory loggerFactory)
 {
+    private readonly ILogger _logger = loggerFactory.CreateLogger<Daemon>();
+    private readonly ILogger _schedulerLogger = loggerFactory.CreateLogger<Scheduler>();
+    private readonly ILogger _executorLogger = loggerFactory.CreateLogger<Executor>();
     private readonly Scheduler _scheduler = new();
-    private readonly Executor _executor = new();
+    private readonly Executor _executor = new(loggerFactory.CreateLogger<Executor>());
     private readonly AutoResetEvent _executeSignal = new(false);
     private CronJob[] _currentJobs = [];
     private bool _configChanged = false;
@@ -31,16 +54,14 @@ public class Daemon
     {
         while (true)
         {
-            Console.WriteLine("Waiting for execute signal");
+            _executorLogger.LogInformation("Waiting for execute signal");
             _executeSignal.WaitOne();
+            var task = Task.Run(() => { });
             foreach (var job in _currentJobs)
             {
                 var command = job.Command;
-                Console.WriteLine($"Executing command: {command}");
-                // run commands using Tasks
-                // how to handle errors in running tasks?
-                // TODO: improve launching one shot tasks
-                Task.Run(() => _executor.Execute(command));
+                _executorLogger.LogInformation("Executing command: '{}'", command);
+                Task.Run(() => _executor.Execute(command)).Forget();
             }
         }
     }
@@ -90,14 +111,14 @@ public class Daemon
                 _cfgLock.Enter();
                 if (_configChanged)
                 {
-                    Console.WriteLine("Loading config");
+                    _schedulerLogger.LogInformation("Loading config");
                     _scheduler.LoadConfiguration(_configuration);
                 }
                 if (!_scheduler.IsEmpty)
                 {
                     if (!_configChanged)
                     {
-                        Console.WriteLine("Rescheduling top job");
+                        _schedulerLogger.LogInformation("Rescheduling top job");
                         var (_, jobs) = _scheduler.Peek();
                         _currentJobs = new CronJob[jobs.Count];
                         jobs.CopyTo(_currentJobs);
@@ -113,23 +134,32 @@ public class Daemon
                     var waitFor = nextExecution - now;
 
                     // wait until next execution
-                    Console.WriteLine($"Waiting for next execution time: {nextExecution} - {now} = {waitFor}");
+                    _schedulerLogger.LogInformation("Waiting for next execution time: {} - {} = {}", nextExecution, now, waitFor);
                     // ensure that waitFor is not negative (shouldn't happen, unless crazy rescheduling, I think)
                     _cfgLock.Exit();
                     Thread.Sleep(waitFor);
-                    Console.WriteLine("Woken up from waiting for next event");
+                    _schedulerLogger.LogInformation("Woken up from waiting for next event");
                 }
                 else
                 {
                     // wait for config changes
-                    Console.WriteLine("Waiting for change in config");
                     _cfgLock.Exit();
+                    _schedulerLogger.LogInformation("Waiting for change in config");
                     Thread.Sleep(Timeout.Infinite);
                 }
             }
             catch (ThreadInterruptedException)
             {
-                Console.WriteLine("Caught interrupt exception");
+                _schedulerLogger.LogInformation("Caught interrupt exception");
+            }
+            catch (Exception ex)
+            {
+                _schedulerLogger.LogError("Caught unexpected exception: {}", ex);
+            }
+            finally
+            {
+                if (_cfgLock.IsHeldByCurrentThread)
+                    _cfgLock.Exit();
             }
         }
     }
@@ -149,7 +179,7 @@ public class Daemon
     /// </summary>
     public void MainLoop()
     {
-        // TODO: maybe better logging
+        _logger.LogInformation("Starting main loop");
         var executor = new Thread(ExecuteThread);
         var scheduler = new Thread(SchedulerThread);
         executor.Name = "Execute Thread";
@@ -164,7 +194,7 @@ public class Daemon
         {
             try
             {
-                Console.WriteLine("Waiting for connection");
+                _logger.LogInformation("Waiting for connection");
                 using var conn = server.WaitForConnection();
                 var configFile = conn.ReadString();
                 var newConfiguration = LoadJobConfiguration(configFile);
@@ -175,7 +205,7 @@ public class Daemon
                     {
                         _configChanged = true;
                         _configuration = newConfiguration;
-                        Console.WriteLine("Wake up scheduler");
+                        _logger.LogInformation("Waking up scheduler");
                         scheduler.Interrupt();
                         _appCfg.Configuration.InitialJobsFile = configFile;
                         _appCfg.Save();
@@ -184,8 +214,8 @@ public class Daemon
             }
             catch (Exception ex)
             {
-                // just log the exception and move on?
-                Console.WriteLine(ex.ToString());
+                // just log the exception and move on
+                _logger.LogError("Caught unexpected exception: {}", ex);
             }
         }
     }

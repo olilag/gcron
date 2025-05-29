@@ -56,11 +56,19 @@ public static class Settings
     /// <summary>
     /// Location where registered job configurations are stored.
     /// </summary>
-    public readonly static string SpoolLocation = "/var/spool/gcron";
+    public const string SpoolLocation = "/var/spool/gcron";
     /// <summary>
     /// Default editor for cases where it is not defined by env variable EDITOR.
     /// </summary>
-    public readonly static string DefaultEditor = "nano";
+    public const string DefaultEditor = "nano";
+    /// <summary>
+    /// Location of daemons log file.
+    /// </summary>
+    public const string LogFileLocation = "/var/log/gcron.log";
+    /// <summary>
+    /// Shell to use for job execution.
+    /// </summary>
+    public const string ExecuteShell = "/bin/sh";
 
     private static Config GetEmptyConfig()
     {
