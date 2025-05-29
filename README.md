@@ -28,8 +28,11 @@ Each field can also contain comma separated values, ranges (e.g. `1-5`) or `*` (
 
 ### Preparing
 
-Daemon needs access to `/var/spool/gcron` directory. By default `/var/spool` is owned by `root` and so it does not have access to it.
-To fix this either create the directory manually and `chown` it to yourself or run this [setup](setup.sh) script (will ask for root password).
+Daemon needs access to `/var/spool/gcron` directory.
+By default `/var/spool` is owned by `root` and so it does not have access to it.
+It also generates logs to `/var/log/gcron`.
+To this file the daemon needs to have write privileges.
+To fix this either create the directory and file manually, `chown` it to yourself or run this [setup](setup.sh) script (will ask for root password).
 
 ### Executing program
 
