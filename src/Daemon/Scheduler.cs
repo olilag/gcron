@@ -155,6 +155,12 @@ retry_day:
         return _scheduledEvents.First();
     }
 
+    /// <summary>
+    /// Adds an element to dictionary with provided key.
+    /// </summary>
+    /// <param name="dict">Dictionary to add to.</param>
+    /// <param name="job">Element to add.</param>
+    /// <param name="executionTime">Key for element.</param>
     private static void AddEvent(SortedDictionary<DateTime, List<CronJob>> dict, CronJob job, DateTime executionTime)
     {
         if (!dict.TryGetValue(executionTime, out var list))

@@ -5,6 +5,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Daemon;
 
+/// <summary>
+/// Provider for <see cref="FileLogger"/>.
+/// </summary>
+/// <param name="logWriter">Stream for logs.</param>
 class FileLoggerProvider(StreamWriter logWriter) : ILoggerProvider
 {
     private readonly StreamWriter _logWriter = logWriter;
@@ -21,6 +25,12 @@ class FileLoggerProvider(StreamWriter logWriter) : ILoggerProvider
     }
 }
 
+/// <summary>
+/// Logs to a file.
+/// </summary>
+/// <param name="categoryName">The category name for messages produced by the logger.</param>
+/// <param name="logWriter">Stream for logs.</param>
+/// <param name="writerLock">Lock for synchronization of writes.</param>
 class FileLogger(string categoryName, StreamWriter logWriter, Lock writerLock) : ILogger
 {
     private readonly string _categoryName = categoryName;

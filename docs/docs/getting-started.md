@@ -22,7 +22,7 @@ sudo chown "$user_id" /var/spool/gcron
 ## Executing program
 
 1. Launch daemon by running `dotnet run --project src/Daemon`.
-2. Launch editor by running `dotnet run --project src/Editor`:
+2. Launch editor by running `dotnet run --project src/Editor --`. Supported options:
     - `-l` - will list jobs in current configuration
     - `-e` - will open editor (`$EDITOR` or `nano`) to edit current configuration
     - `-r` - will remove current configuration

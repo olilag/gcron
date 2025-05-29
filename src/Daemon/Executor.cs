@@ -8,10 +8,15 @@ namespace Daemon;
 /// <summary>
 /// Executes job commands.
 /// </summary>
+/// <param name="logger">Logger to print logs.</param>
 class Executor(ILogger logger)
 {
     private readonly ILogger _logger = logger;
 
+    /// <summary>
+    /// Executes given command in a shell.
+    /// </summary>
+    /// <param name="command">Command to execute.</param>
     public void Execute(string command)
     {
         var cmd = Settings.ExecuteShell;
