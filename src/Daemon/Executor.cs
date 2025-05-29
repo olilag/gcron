@@ -23,10 +23,19 @@ class Executor(ILogger logger)
             proc.StartInfo.FileName = cmd;
             proc.StartInfo.Arguments = args;
             proc.StartInfo.CreateNoWindow = true;
-            proc.StartInfo.UseShellExecute = true;
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardError = true;
             proc.Start();
             proc.WaitForExit();
-            _logger.LogInformation("Executed: '{}' with args '{}'", cmd, args);
+            var err = proc.StandardError.ReadToEnd();
+            if (!string.IsNullOrEmpty(err))
+            {
+                _logger.LogError("Executed: '{}' with args '{}', stderr: '{}'", cmd, args, err.Trim().ReplaceLineEndings(" "));
+            }
+            else
+            {
+                _logger.LogInformation("Executed: '{}' with args '{}'", cmd, args);
+            }
         }
         catch (Exception ex)
         {
