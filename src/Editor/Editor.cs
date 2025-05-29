@@ -7,6 +7,16 @@ using Common.Configuration;
 
 namespace Editor;
 
+static class ErrorCodes
+{
+    public const int Success = 0;
+    public const int NoConfiguration = 1;
+    public const int InvalidConfiguration = 2;
+    public const int NoConnectionToDaemon = 3;
+    public const int IOError = 4;
+    public const int NoConfigurationDirectory = 5;
+}
+
 /// <summary>
 /// Encapsulates commands to edit and manage job configuration.
 /// </summary>
@@ -46,7 +56,7 @@ public static class Editor
                 {
                     Console.WriteLine(job.ToString(true));
                 }
-                return 0;
+                return ErrorCodes.Success;
             }
             catch (IOException)
             {
@@ -57,7 +67,7 @@ public static class Editor
         else
         {
             Console.WriteLine($"No configuration for {user}");
-            return 1;
+            return ErrorCodes.NoConfiguration;
         }
     }
 
@@ -73,17 +83,17 @@ public static class Editor
             using var parser = new Parser(new StreamReader(file.Open(FileMode.Open)));
             var cfg = parser.Parse();
             Console.WriteLine("Configuration is ok");
-            return 0;
+            return ErrorCodes.Success;
         }
         catch (IOException)
         {
             Console.WriteLine("Error while opening configuration");
-            return 4;
+            return ErrorCodes.IOError;
         }
         catch (InvalidConfigurationException ex)
         {
             Console.WriteLine(ex.Message);
-            return 2;
+            return ErrorCodes.InvalidConfiguration;
         }
     }
 
@@ -99,18 +109,18 @@ public static class Editor
             try
             {
                 File.Delete(jobFile);
-                return 0;
+                return ErrorCodes.Success;
             }
             catch (IOException ex)
             {
                 Console.WriteLine(ex.Message);
-                return 4;
+                return ErrorCodes.IOError;
             }
         }
         else
         {
             Console.WriteLine($"No configuration for {user}");
-            return 1;
+            return ErrorCodes.NoConfiguration;
         }
     }
 
@@ -147,21 +157,33 @@ public static class Editor
             var client = new Client();
             using var conn = client.Connect();
             conn.WriteString(fileName);
-            return 0;
+            Console.WriteLine("Configuration edited successfully");
+            return ErrorCodes.Success;
         }
         catch (TimeoutException)
         {
             Console.WriteLine("Couldn't connect to daemon, make sure daemon is running");
-            return 3;
+            return ErrorCodes.NoConnectionToDaemon;
         }
     }
 
     private static int InstallConfig(string sourceFileName, string destinationFileName)
     {
-        // TODO: handle errors
         var dir = Path.GetDirectoryName(destinationFileName);
-        Directory.CreateDirectory(dir!);
-        File.Copy(sourceFileName, destinationFileName, true);
+        if (!Directory.Exists(dir))
+        {
+            Console.WriteLine($"Directory for configurations ('{dir}') doesn't exist, create it please (read README.md)");
+            return ErrorCodes.NoConfigurationDirectory;
+        }
+        try
+        {
+            File.Copy(sourceFileName, destinationFileName, true);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Console.WriteLine($"Doesn't have sufficient privileges to write to '{destinationFileName}' where job configuration is, please read README.md to fix this error");
+            return ErrorCodes.IOError;
+        }
         return NotifyDaemon(destinationFileName);
     }
 
@@ -172,7 +194,6 @@ public static class Editor
     public static int EditJobs()
     {
         using var tmpFile = new TempFile();
-        Console.WriteLine(tmpFile);
         var user = GetCurrentUser();
         if (JobConfigurationExists(user, out var jobFile))
         {
@@ -188,7 +209,7 @@ public static class Editor
         catch (InvalidConfigurationException ex)
         {
             Console.WriteLine(ex.Message);
-            return 2;
+            return ErrorCodes.InvalidConfiguration;
         }
         return InstallConfig(tmpFile, jobFile);
     }
