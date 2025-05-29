@@ -8,11 +8,11 @@ class Program
     static ILoggerFactory CreateLoggerFactory()
     {
         // Define the path to the text file
+        // TODO: switch to correct file
         var logFilePath = "gcron.log";
 
         // Create a StreamWriter to write logs to a text file
         var logFileWriter = new StreamWriter(logFilePath, append: true);
-        // Create an ILoggerFactory
         return LoggerFactory.Create(builder =>
         {
             // Add a custom log provider to write logs to text files

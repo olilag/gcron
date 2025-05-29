@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Common.Configuration;
@@ -181,20 +182,40 @@ public readonly record struct DayOfMonth : IEnumerable<byte>
 
     public override string ToString()
     {
+        return ToString(false);
+    }
+
+    public string ToString(bool compact = false)
+    {
         var sb = new StringBuilder();
-        sb.Append($"{GetType().Name} {{ days: ");
-        bool first = true;
-        foreach (var day in this)
+        if (!compact)
         {
-            if (!first)
+            sb.Append($"{GetType().Name} {{ days: ");
+            bool first = true;
+            foreach (var day in this)
             {
-                sb.Append(", ");
+                if (!first)
+                {
+                    sb.Append(", ");
+                }
+                sb.Append(day);
+                first = false;
             }
-            sb.Append(day);
-            first = false;
+            sb.Append(" }");
         }
-        sb.Append(" }");
+        else
+        {
+            if (_value == All._value)
+            {
+                sb.Append('*');
+            }
+            else
+            {
+                sb.Append(this.MakeCompact());
+            }
+        }
         return sb.ToString();
+
     }
 }
 
@@ -267,20 +288,40 @@ public readonly record struct Hour : IEnumerable<byte>
 
     public override string ToString()
     {
+        return ToString(false);
+    }
+
+    public string ToString(bool compact = false)
+    {
         var sb = new StringBuilder();
-        sb.Append($"{GetType().Name} {{ hours: ");
-        bool first = true;
-        foreach (var hour in this)
+        if (!compact)
         {
-            if (!first)
+            sb.Append($"{GetType().Name} {{ hours: ");
+            bool first = true;
+            foreach (var hour in this)
             {
-                sb.Append(", ");
+                if (!first)
+                {
+                    sb.Append(", ");
+                }
+                sb.Append(hour);
+                first = false;
             }
-            sb.Append(hour);
-            first = false;
+            sb.Append(" }");
         }
-        sb.Append(" }");
+        else
+        {
+            if (_value == All._value)
+            {
+                sb.Append('*');
+            }
+            else
+            {
+                sb.Append(this.MakeCompact());
+            }
+        }
         return sb.ToString();
+
     }
 }
 
@@ -353,19 +394,83 @@ public readonly record struct Minute : IEnumerable<byte>
 
     public override string ToString()
     {
+        return ToString(false);
+    }
+
+    public string ToString(bool compact = false)
+    {
         var sb = new StringBuilder();
-        sb.Append($"{GetType().Name} {{ minutes: ");
-        bool first = true;
-        foreach (var minute in this)
+        if (!compact)
         {
-            if (!first)
+            sb.Append($"{GetType().Name} {{ minutes: ");
+            bool first = true;
+            foreach (var minute in this)
             {
-                sb.Append(", ");
+                if (!first)
+                {
+                    sb.Append(", ");
+                }
+                sb.Append(minute);
+                first = false;
             }
-            sb.Append(minute);
-            first = false;
+            sb.Append(" }");
         }
-        sb.Append(" }");
+        else
+        {
+            if (_value == All._value)
+            {
+                sb.Append('*');
+            }
+            else
+            {
+                sb.Append(this.MakeCompact());
+            }
+        }
+        return sb.ToString();
+    }
+}
+
+public static class EnumerableExtensions
+{
+    public static string MakeCompact(this IEnumerable<byte> seq)
+    {
+        var sb = new StringBuilder();
+        var begin = seq.First();
+        var last = begin;
+        seq = seq.Skip(1);
+        bool first = true;
+        string prepend;
+        foreach (var el in seq)
+        {
+            if (el == last + 1)
+            {
+                last = el;
+            }
+            else
+            {
+                prepend = first ? "" : ",";
+                if (begin != last)
+                {
+                    sb.Append($"{prepend}{begin}-{last}");
+                }
+                else
+                {
+                    sb.Append($"{prepend}{begin}");
+                }
+                first = false;
+                begin = el;
+                last = el;
+            }
+        }
+        prepend = first ? "" : ",";
+        if (begin != last)
+        {
+            sb.Append($"{prepend}{begin}-{last}");
+        }
+        else
+        {
+            sb.Append($"{prepend}{begin}");
+        }
         return sb.ToString();
     }
 }
@@ -404,4 +509,36 @@ public record class CronJob
     /// Shell command that will be executed.
     /// </summary>
     public required string Command { get; init; }
+
+    public override string ToString()
+    {
+        return ToString(false);
+    }
+
+    public string ToString(bool compact = false)
+    {
+        var sb = new StringBuilder();
+        if (!compact)
+        {
+            sb.Append($"{GetType().Name} {{ ");
+            sb.Append(Minutes).Append(", ");
+            sb.Append(Hours).Append(", ");
+            sb.Append(Days).Append(", ");
+            sb.Append($"{nameof(Months)} {{ {Months} }}").Append(", ");
+            sb.Append($"{nameof(Weekdays)} {{ {Weekdays} }}").Append(", ");
+            sb.Append($"{nameof(Command)} {{ {Command} }}");
+            sb.Append(" }");
+        }
+        else
+        {
+            sb.Append(Minutes.ToString(true)).Append(' ');
+            sb.Append(Hours.ToString(true)).Append(' ');
+            sb.Append(Days.ToString(true)).Append(' ');
+            sb.Append(Months).Append(' ');
+            sb.Append(Weekdays).Append(' ');
+            sb.Append(Command);
+
+        }
+        return sb.ToString();
+    }
 }

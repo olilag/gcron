@@ -44,7 +44,7 @@ public static class Editor
                 var cfg = parser.Parse();
                 foreach (var job in cfg)
                 {
-                    Console.WriteLine(job);
+                    Console.WriteLine(job.ToString(true));
                 }
                 return 0;
             }

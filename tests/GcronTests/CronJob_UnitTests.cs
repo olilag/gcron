@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Common.Configuration;
@@ -207,6 +208,24 @@ public class CronJob_UnitTests
     {
         // Act
         var actual = dayOfWeek.DaysUntilNext(current);
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    public static IEnumerable<object[]> TestData()
+    {
+        yield return new object[] { new Minute(0, 1, 2, 3), "0-3" };
+        yield return new object[] { new Minute(0, 1, 2, 3, 5, 6, 7), "0-3,5-7" };
+        yield return new object[] { new Minute(1), "1" };
+        yield return new object[] { new Minute(1, 3, 5), "1,3,5" };
+    }
+
+    [Theory]
+    [MemberData(nameof(TestData))]
+    public void EnumerableExtensions_MakeCompact(Minute minute, string expected)
+    {
+        // Act
+        var actual = minute.MakeCompact();
         // Assert
         Assert.Equal(expected, actual);
     }
