@@ -55,7 +55,7 @@ public sealed class Server : IDisposable
 /// </summary>
 public sealed class Client : IDisposable
 {
-    const int Timeout = 1000;
+    const int Timeout = 300;
     private readonly NamedPipeClientStream _pipeClient;
     private bool _objectDisposed = false;
 
@@ -68,7 +68,7 @@ public sealed class Client : IDisposable
     /// Tries to connect to a <see cref="Server"/> object.
     /// </summary>
     /// <returns>A <see cref="StringProtocol"/> object to send and receive data between client and serve.</returns>
-    /// <exception cref="TimeoutException">Thrown when couldn't connect to the server.</exception>
+    /// <exception cref="TimeoutException">Thrown when the connection to server wasn't established.</exception>
     public StringProtocol Connect()
     {
         ObjectDisposedException.ThrowIf(_objectDisposed, this);
