@@ -36,7 +36,13 @@ public static class Editor
     private static bool JobConfigurationExists(string user, out string location)
     {
         location = Path.Join(Settings.SpoolLocation, user);
-        return File.Exists(location);
+        if (!File.Exists(location))
+        {
+            return false;
+        }
+        var info = new FileInfo(location);
+        // empty file == no configuration
+        return info.Length != 0;
     }
 
     /// <summary>
@@ -108,8 +114,13 @@ public static class Editor
         {
             try
             {
-                File.Delete(jobFile);
-                return ErrorCodes.Success;
+                File.Create(jobFile).Dispose();
+                var rv = NotifyDaemon(jobFile);
+                if (rv == ErrorCodes.Success)
+                {
+                    Console.WriteLine("Configuration removed");
+                }
+                return rv;
             }
             catch (IOException ex)
             {
@@ -157,7 +168,6 @@ public static class Editor
             var client = new Client();
             using var conn = client.Connect();
             conn.WriteString(fileName);
-            Console.WriteLine("Configuration edited successfully");
             return ErrorCodes.Success;
         }
         catch (TimeoutException)
@@ -184,7 +194,12 @@ public static class Editor
             Console.WriteLine($"Doesn't have sufficient privileges to write to '{destinationFileName}' where job configuration is, please read README.md to fix this error");
             return ErrorCodes.IOError;
         }
-        return NotifyDaemon(destinationFileName);
+        var rv = NotifyDaemon(destinationFileName);
+        if (rv == ErrorCodes.Success)
+        {
+            Console.WriteLine("Configuration edited successfully");
+        }
+        return rv;
     }
 
     /// <summary>

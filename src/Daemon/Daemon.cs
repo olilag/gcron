@@ -171,8 +171,13 @@ public class Daemon(ILoggerFactory loggerFactory)
 
     private static HashSet<CronJob> LoadJobConfiguration(string fileName)
     {
+        if (!File.Exists(fileName))
+        {
+            return [];
+        }
         using var parser = new Parser(new StreamReader(fileName));
         return parser.Parse();
+
     }
 
     /// <summary>
