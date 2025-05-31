@@ -27,15 +27,17 @@ class TempFile : IDisposable
     }
 
     /// <summary>
-    /// Creates a new file in systems temporary directory.
+    /// Creates a new file in system's temporary directory.
     /// </summary>
     public TempFile()
     {
-        _location = Path.GetTempPath() + "crontab." + RandomId();
-        while (File.Exists(_location))
+        var prefix = Path.GetTempPath() + "crontab.";
+        var rid = RandomId();
+        while (File.Exists(prefix + rid))
         {
-            _location = Path.GetTempPath() + "crontab." + RandomId();
+            rid = RandomId();
         }
+        _location = prefix + rid;
         File.Create(_location).Dispose();
     }
 
