@@ -10,11 +10,11 @@ The following crontab syntax is supported.
 Each field can also contain comma separated values, ranges (e.g. `1-5`) or `*` (all values allowed).
 
 ```text
-# * * * * * <command to execute>
-# | | | | |
-# | | | | day of the week (0–7) (Sunday to Saturday; 7 is also Sunday)
-# | | | month (1–12)
-# | | day of the month (1–31)
-# | hour (0–23)
-# minute (0–59)
+* * * * * <command to execute>
+| | | | |
+| | | | day of the week (0–7) (Sunday to Saturday; 7 is also Sunday)
+| | | month (1–12)
+| | day of the month (1–31)
+| hour (0–23)
+minute (0–59)
 ```

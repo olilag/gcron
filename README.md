@@ -10,13 +10,13 @@ The following crontab syntax is supported.
 Each field can also contain comma separated values, ranges (e.g. `1-5`) or `*` (all values allowed).
 
 ```text
-# * * * * * <command to execute>
-# | | | | |
-# | | | | day of the week (0–7) (Sunday to Saturday; 7 is also Sunday)
-# | | | month (1–12)
-# | | day of the month (1–31)
-# | hour (0–23)
-# minute (0–59)
+* * * * * <command to execute>
+| | | | |
+| | | | day of the week (0–7) (Sunday to Saturday; 7 is also Sunday)
+| | | month (1–12)
+| | day of the month (1–31)
+| hour (0–23)
+minute (0–59)
 ```
 
 ## Getting Started
@@ -30,7 +30,7 @@ Each field can also contain comma separated values, ranges (e.g. `1-5`) or `*` (
 
 Daemon needs access to `/var/spool/gcron` directory.
 By default `/var/spool` is owned by `root` and so it does not have access to it.
-It also generates logs to `/var/log/gcron`.
+It also generates logs to `/var/log/gcron.log`.
 To this file the daemon needs to have write privileges.
 To fix this either create the directory and file manually, `chown` it to yourself or run this [setup](setup.sh) script (will ask for root password).
 
