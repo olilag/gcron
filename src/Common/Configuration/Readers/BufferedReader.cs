@@ -2,6 +2,9 @@ using System.IO;
 
 namespace Common.Configuration.Readers;
 
+/// <summary>
+/// Wraps a <see cref="TextReader"/> and buffers the access to it.
+/// </summary>
 class BufferedReader : IReader
 {
     private readonly TextReader _reader;

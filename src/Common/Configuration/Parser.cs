@@ -11,7 +11,6 @@ namespace Common.Configuration;
 /// </summary>
 public class InvalidConfigurationException : Exception
 {
-    public InvalidConfigurationException() { }
     public InvalidConfigurationException(string message) : base(message) { }
     public InvalidConfigurationException(string message, Exception innerException) : base(message, innerException) { }
 }
@@ -24,9 +23,18 @@ public sealed class Parser(TextReader reader) : IDisposable
 {
     private readonly TokenReader _reader = new(new BufferedReader(reader));
 
+    /// <summary>
+    /// Parses a range of numbers from a string.
+    /// The range can be any of the following: simple number (8), a range (7-15), list of simple numbers and ranges (8,9,15-17,6,4-8) or '*'.
+    /// </summary>
+    /// <param name="s">String to parse.</param>
+    /// <param name="all">Range of numbers to use when '*' is used.</param>
+    /// <returns>List of parsed numbers.</returns>
+    /// <exception cref="InvalidDataException">Thrown if the string representation of a number in the string can't be converted to a number.</exception>
     private static List<byte> GetNumbers(string s, IEnumerable<byte> all)
     {
         var numbers = new List<byte>();
+        // iterate over elements of a list
         foreach (var m in s.Split(','))
         {
             switch (m.Split('-'))
@@ -34,6 +42,7 @@ public sealed class Parser(TextReader reader) : IDisposable
                 case ["*"]:
                     numbers.AddRange(all);
                     break;
+                // single number
                 case [var num] when num.All(char.IsAsciiDigit):
                     if (byte.TryParse(num, out var parsed))
                     {
@@ -44,6 +53,7 @@ public sealed class Parser(TextReader reader) : IDisposable
                         goto default;
                     }
                     break;
+                // a range
                 case [var num1, var num2] when num1.All(char.IsAsciiDigit) && num2.All(char.IsAsciiDigit):
                     if (byte.TryParse(num1, out var parsed1) && byte.TryParse(num2, out var parsed2))
                     {
@@ -61,6 +71,11 @@ public sealed class Parser(TextReader reader) : IDisposable
         return numbers;
     }
 
+    /// <summary>
+    /// Parse the minutes field in job configuration.
+    /// </summary>
+    /// <returns>Parsed minutes or <see langword="null"/> when there is nothing to parse.</returns>
+    /// <exception cref="InvalidConfigurationException">When the configuration is invalid.</exception>
     private Minute? ParseMinutes()
     {
         var token = _reader.ReadToken();
@@ -89,6 +104,11 @@ public sealed class Parser(TextReader reader) : IDisposable
         }
     }
 
+    /// <summary>
+    /// Parse the hours field in job configuration.
+    /// </summary>
+    /// <returns>Parsed hours field.</returns>
+    /// <exception cref="InvalidConfigurationException">When the configuration is invalid.</exception>
     private Hour ParseHours()
     {
         var token = _reader.ReadToken();
@@ -113,6 +133,11 @@ public sealed class Parser(TextReader reader) : IDisposable
         }
     }
 
+    /// <summary>
+    /// Parse the days field in job configuration.
+    /// </summary>
+    /// <returns>Parsed days field.</returns>
+    /// <exception cref="InvalidConfigurationException">When the configuration is invalid.</exception>
     private DayOfMonth ParseDaysOfMonth()
     {
         var token = _reader.ReadToken();
@@ -137,6 +162,11 @@ public sealed class Parser(TextReader reader) : IDisposable
         }
     }
 
+    /// <summary>
+    /// Parse the months field in job configuration.
+    /// </summary>
+    /// <returns>Parsed months field.</returns>
+    /// <exception cref="InvalidConfigurationException">When the configuration is invalid.</exception>
     private Month ParseMonths()
     {
         var token = _reader.ReadToken();
@@ -171,6 +201,11 @@ public sealed class Parser(TextReader reader) : IDisposable
         }
     }
 
+    /// <summary>
+    /// Parse the days of week field in job configuration.
+    /// </summary>
+    /// <returns>Parsed days of week field.</returns>
+    /// <exception cref="InvalidConfigurationException">When the configuration is invalid.</exception>
     private DayOfWeek ParseDaysOfWeek()
     {
         var token = _reader.ReadToken();
@@ -212,6 +247,11 @@ public sealed class Parser(TextReader reader) : IDisposable
         }
     }
 
+    /// <summary>
+    /// Parse command field.
+    /// </summary>
+    /// <returns>Parsed command field.</returns>
+    /// <exception cref="InvalidConfigurationException">When the configuration is invalid.</exception>
     private string ParseCommand()
     {
         var token = _reader.ReadToken(true);
@@ -222,6 +262,10 @@ public sealed class Parser(TextReader reader) : IDisposable
         return token.Value!;
     }
 
+    /// <summary>
+    /// Parses a single job configuration.
+    /// </summary>
+    /// <returns>Parsed job or <see langword="null"/> when there is nothing more to parse.</returns>
     private CronJob? ParseJob()
     {
         if (ParseMinutes() is Minute minute) { }
