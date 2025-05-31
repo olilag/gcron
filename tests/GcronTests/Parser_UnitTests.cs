@@ -157,132 +157,129 @@ public class Parser_UnitTests
         return parser.Parse();
     }
 
-    [Fact]
-    public void Parser_Parse_InvalidMinutes()
+    [Theory]
+    // too big
+    [InlineData("60 2 3 4 5 echo Hello World!")]
+    // negative
+    [InlineData("-60 2 3 4 5 echo Hello World!")]
+    // not a digit
+    [InlineData("6h0 2 3 4 5 echo Hello World!")]
+    // overflow
+    [InlineData("600 2 3 4 5 echo Hello World!")]
+    public void Parser_Parse_InvalidMinutes(string input)
     {
-        // Arrange
-        var tooBig = "60 2 3 4 5 echo Hello World!";
-        var negative = "-60 2 3 4 5 echo Hello World!";
-        var notDigit = "6h0 2 3 4 5 echo Hello World!";
-        var overflow = "600 2 3 4 5 echo Hello World!";
         // Assert
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(tooBig));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(negative));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(notDigit));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(overflow));
+        Assert.Throws<InvalidConfigurationException>(() => ParseString(input));
     }
 
-    [Fact]
-    public void Parser_Parse_InvalidHours()
+    [Theory]
+    // too big
+    [InlineData("1 24 3 4 5 echo Hello World!")]
+    // negative
+    [InlineData("1 -2 3 4 5 echo Hello World!")]
+    // not a digit
+    [InlineData("1 2hu 3 4 5 echo Hello World!")]
+    //overflow
+    [InlineData("1 750 3 4 5 echo Hello World!")]
+    public void Parser_Parse_InvalidHours(string input)
     {
-        // Arrange
-        var tooBig = "1 24 3 4 5 echo Hello World!";
-        var negative = "1 -2 3 4 5 echo Hello World!";
-        var notDigit = "1 2hu 3 4 5 echo Hello World!";
-        var overflow = "1 750 3 4 5 echo Hello World!";
         // Assert
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(tooBig));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(negative));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(notDigit));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(overflow));
+        Assert.Throws<InvalidConfigurationException>(() => ParseString(input));
     }
 
-    [Fact]
-    public void Parser_Parse_InvalidDayOfMonth()
+    [Theory]
+    // too big
+    [InlineData("1 2 32 4 5 echo Hello World!")]
+    // too small
+    [InlineData("1 2 0 4 5 echo Hello World!")]
+    // negative
+    [InlineData("1 2 -3 4 5 echo Hello World!")]
+    // not a digit
+    [InlineData("1 2 3hy 4 5 echo Hello World!")]
+    // overflow
+    [InlineData("1 2 600 4 5 echo Hello World!")]
+    public void Parser_Parse_InvalidDayOfMonth(string input)
     {
-        // Arrange
-        var tooBig = "1 2 32 4 5 echo Hello World!";
-        var tooSmall = "1 2 0 4 5 echo Hello World!";
-        var negative = "1 2 -3 4 5 echo Hello World!";
-        var notDigit = "1 2 3hy 4 5 echo Hello World!";
-        var overflow = "1 2 600 4 5 echo Hello World!";
         // Assert
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(tooBig));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(tooSmall));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(negative));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(notDigit));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(overflow));
+        Assert.Throws<InvalidConfigurationException>(() => ParseString(input));
     }
 
-    [Fact]
-    public void Parser_Parse_InvalidMonth()
+    [Theory]
+    // too big
+    [InlineData("1 2 3 13 5 echo Hello World!")]
+    // too small
+    [InlineData("1 2 3 0 5 echo Hello World!")]
+    // negative
+    [InlineData("1 2 3 -4 5 echo Hello World!")]
+    // not a digit
+    [InlineData("1 2 3 4hui 5 echo Hello World!")]
+    // overflow 
+    [InlineData("1 2 3 900 5 echo Hello World!")]
+    public void Parser_Parse_InvalidMonth(string input)
     {
-        // Arrange
-        var tooBig = "1 2 3 13 5 echo Hello World!";
-        var tooSmall = "1 2 3 0 5 echo Hello World!";
-        var negative = "1 2 3 -4 5 echo Hello World!";
-        var notDigit = "1 2 3 4hui 5 echo Hello World!";
-        var overflow = "1 2 3 900 5 echo Hello World!";
         // Assert
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(tooBig));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(tooSmall));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(negative));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(notDigit));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(overflow));
+        Assert.Throws<InvalidConfigurationException>(() => ParseString(input));
     }
 
-    [Fact]
-    public void Parser_Parse_InvalidDayOfWeek()
+    [Theory]
+    // too big
+    [InlineData("1 2 3 4 8 echo Hello World!")]
+    // negative
+    [InlineData("1 2 3 4 -5 echo Hello World!")]
+    // not a digit
+    [InlineData("1 2 3 4 5hui echo Hello World!")]
+    // overflow
+    [InlineData("1 2 3 4 600 echo Hello World!")]
+    public void Parser_Parse_InvalidDayOfWeek(string input)
     {
-        // Arrange
-        var tooBig = "1 2 3 4 8 echo Hello World!";
-        var negative = "1 2 3 4 -5 echo Hello World!";
-        var notDigit = "1 2 3 4 5hui echo Hello World!";
-        var overflow = "1 2 3 4 600 echo Hello World!";
         // Assert
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(tooBig));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(negative));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(notDigit));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(overflow));
+        Assert.Throws<InvalidConfigurationException>(() => ParseString(input));
     }
 
-    [Fact]
-    public void Parser_Parse_Job_InvalidRange()
+    [Theory]
+    // negativerRange = range start is greater than end
+    [InlineData("0-0 9-5 18-22 1-3 0-7 echo Hello World!")]
+    // invalid first part
+    [InlineData("0-0 abc-5 18-22 1-3 0-7 echo Hello World!")]
+    // invalid second part
+    [InlineData("0-0 9-cde 18-22 1-3 0-7 echo Hello World!")]
+    // out of range
+    [InlineData("0-60 9-12 18-22 1-3 0-7 echo Hello World!")]
+    public void Parser_Parse_Job_InvalidRange(string input)
     {
-        // Arrange
-        var negativeRange = "0-0 9-5 18-22 1-3 0-7 echo Hello World!";
-        var invalidFirstPart = "0-0 abc-5 18-22 1-3 0-7 echo Hello World!";
-        var invalidSecondPart = "0-0 9-cde 18-22 1-3 0-7 echo Hello World!";
-        var outOfRange = "0-60 9-12 18-22 1-3 0-7 echo Hello World!";
         // Assert
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(negativeRange));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(invalidFirstPart));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(invalidSecondPart));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(outOfRange));
+        Assert.Throws<InvalidConfigurationException>(() => ParseString(input));
     }
 
-    [Fact]
-    public void Parser_Parse_Job_InvalidCommas()
+    [Theory]
+    // empty comma
+    [InlineData("0, 9 18 1 1 echo Hello World!")]
+    // too big number
+    [InlineData("0,61 5 18 3 5 echo Hello World!")]
+    // only comma
+    [InlineData(", 9 18 1 0 echo Hello World!")]
+    public void Parser_Parse_Job_InvalidCommas(string input)
     {
-        // Arrange
-        var emptyComma = "0, 9 18 1 1 echo Hello World!";
-        var tooBigNumber = "0,61 5 18 3 5 echo Hello World!";
-        var onlyComma = ", 9 18 1 0 echo Hello World!";
         // Assert
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(emptyComma));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(tooBigNumber));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(onlyComma));
+        Assert.Throws<InvalidConfigurationException>(() => ParseString(input));
     }
 
-    [Fact]
-    public void Parser_Parse_Job_InvalidRecord()
+    [Theory]
+    // missing command
+    [InlineData("0 9 18 1 1")]
+    // missing day of week
+    [InlineData("0 5 18 3")]
+    // missing month
+    [InlineData("0 9 18")]
+    // missing day of month
+    [InlineData("0 9")]
+    // missing hours
+    [InlineData("0")]
+    // second incomplete
+    [InlineData("0 9 18 1 1 x\n5")]
+    public void Parser_Parse_Job_InvalidRecord(string input)
     {
-        // Arrange
-        var missingCommand = "0 9 18 1 1";
-        var missingDayOfWeek = "0 5 18 3";
-        var missingMonth = "0 9 18";
-        var missingDayOfMonth = "0 9";
-        var missingHours = "0";
-        var secondIncomplete = """
-        0 9 18 1 1 x
-        5
-        """;
         // Assert
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(missingCommand));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(missingDayOfWeek));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(missingMonth));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(missingDayOfMonth));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(missingHours));
-        Assert.Throws<InvalidConfigurationException>(() => ParseString(secondIncomplete));
+        Assert.Throws<InvalidConfigurationException>(() => ParseString(input));
     }
 }
