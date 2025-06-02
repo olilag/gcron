@@ -2,32 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Common;
 using Common.Communication;
 using Common.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Daemon;
-
-public static class TaskExtensions
-{
-    /// <summary>
-    /// Observes the task to avoid the UnobservedTaskException event to be raised.
-    /// </summary>
-    public static void Forget(this Task task)
-    {
-        if (!task.IsCompleted || task.IsFaulted)
-        {
-            _ = ForgetAwaited(task);
-        }
-
-        async static Task ForgetAwaited(Task task)
-        {
-            await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
-        }
-    }
-}
 
 /// <summary>
 /// Represents long running program which schedules and executes jobs defined in a schedule.
@@ -57,12 +37,7 @@ public class Daemon(ILoggerFactory loggerFactory)
         {
             _executorLogger.LogInformation("Waiting for execute signal");
             _executeSignal.WaitOne();
-            var task = Task.Run(() => { });
-            foreach (var job in _currentJobs)
-            {
-                var command = job.Command;
-                Task.Run(() => _executor.Execute(command)).Forget();
-            }
+            _executor.ExecuteJobs(_currentJobs);
         }
     }
 

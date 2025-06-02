@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Common;
+using Common.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Daemon;
@@ -17,7 +19,7 @@ class Executor(ILogger logger)
     /// Executes given command in a shell.
     /// </summary>
     /// <param name="command">Command to execute.</param>
-    public void Execute(string command)
+    private void Execute(string command)
     {
         var cmd = Settings.ExecuteShell;
         // escape " in command
@@ -39,6 +41,34 @@ class Executor(ILogger logger)
         catch (Exception ex)
         {
             _logger.LogError("Execution of '{} {}' failed with exception: {}", cmd, args, ex);
+        }
+    }
+
+    public void ExecuteJobs(CronJob[] jobs)
+    {
+        foreach (var job in jobs)
+        {
+            var command = job.Command;
+            Task.Run(() => Execute(command)).Forget();
+        }
+    }
+}
+
+public static class TaskExtensions
+{
+    /// <summary>
+    /// Observes the task to avoid the UnobservedTaskException event to be raised.
+    /// </summary>
+    public static void Forget(this Task task)
+    {
+        if (!task.IsCompleted || task.IsFaulted)
+        {
+            _ = ForgetAwaited(task);
+        }
+
+        async static Task ForgetAwaited(Task task)
+        {
+            await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         }
     }
 }
