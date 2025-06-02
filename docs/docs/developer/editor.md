@@ -1,0 +1,3 @@
+# Editor
+
+## Configuration management
