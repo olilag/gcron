@@ -48,7 +48,7 @@ After calculating both execution dates, we need to decide which of the two to us
 
 ## Logging
 
-Daemon logs information about important events to a file located at `/var/log/gcron.log`.
+Daemon logs information about important events (e.g. configuration was changed, job rescheduling, unexpected exceptions,...) to a file located at `/var/log/gcron.log`.
 
 For this it uses the <xref:Microsoft.Extensions.Logging.ILogger> API with a custom file logger implemented by <xref:Daemon.FileLogger>.
 
