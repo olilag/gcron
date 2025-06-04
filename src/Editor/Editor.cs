@@ -187,7 +187,7 @@ public static class Editor
         }
         try
         {
-            File.Copy(sourceFileName, destinationFileName, true);
+            File.Move(sourceFileName, destinationFileName, true);
         }
         catch (UnauthorizedAccessException)
         {
@@ -208,7 +208,7 @@ public static class Editor
     /// <returns>Return code for main.</returns>
     public static int EditJobs()
     {
-        using var tmpFile = new TempFile();
+        var tmpFile = new TempFile();
         var user = GetCurrentUser();
         if (JobConfigurationExists(user, out var jobFile))
         {
