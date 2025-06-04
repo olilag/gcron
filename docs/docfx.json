@@ -10,7 +10,8 @@
           ]
         }
       ],
-      "dest": "api"
+      "output": "api",
+      "includePrivateMembers": true
     }
   ],
   "build": {
@@ -24,12 +25,8 @@
         ]
       }
     ],
-    "resource": [
-      {
-        "files": [
-          "images/**"
-        ]
-      }
+    "xref": [
+      "https://learn.microsoft.com/en-us/dotnet/.xrefmap.json"
     ],
     "output": "_site",
     "template": [
