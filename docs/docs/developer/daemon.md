@@ -1,7 +1,7 @@
 # Daemon
 
 The daemon is a long running program that keeps track of user's current job configuration, schedules individual jobs for execution and finally executes them.
-Our implementation for most of it's runtime it waits (sleeps) for a relevant "event" to occur (user changing it's job configuration, the time to execute a job is now,...).
+Our implementation for most of it's runtime waits (sleeps) for a relevant "event" to occur (user changing it's job configuration, the time to execute a job is now,...).
 Thus it saves system's resources in contrast to an implementation that would constantly check if a change in configuration occurred or if its time for a job to be executed.
 
 ## How it works
